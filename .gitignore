@@ -1,6 +1,23 @@
+# Python
 __pycache__/
-*.pyc
-.env
-venv/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
 .venv/
-output/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Streamlit Cache
+.streamlit/cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

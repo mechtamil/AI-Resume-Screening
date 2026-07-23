@@ -1,25 +1,39 @@
-from models.job_description import JobDescription
+from JD.jd_model import JobDescription
 
-jd = JobDescription()
 
-jd.job_title = "Technical Documentation Engineer"
+def main():
 
-jd.client_name = "Volvo"
+    jd = JobDescription()
 
-jd.experience = "4 to 8 Years"
+    jd.job_title = "Technical Writer"
 
-jd.location = "Bangalore"
+    jd.company_name = "ALTEN"
 
-jd.mandatory_skills = [
-    "DITA",
-    "XML",
-    "Arbortext",
-    "Technical Publications"
-]
+    jd.experience_min = 3
 
-jd.preferred_skills = [
-    "Python",
-    "FrameMaker"
-]
+    jd.experience_max = 6
 
-jd.display()
+    jd.mandatory_skills.extend([
+        "XML",
+        "DITA",
+        "Arbortext"
+    ])
+
+    jd.preferred_skills.extend([
+        "KOLA",
+        "LISA"
+    ])
+
+    print("Job Title :", jd.job_title)
+
+    print("Company :", jd.company_name)
+
+    print("Mandatory Skills :", jd.total_required_skills())
+
+    print("Preferred Skills :", jd.total_preferred_skills())
+
+    print(jd.summary())
+
+
+if __name__ == "__main__":
+    main()
