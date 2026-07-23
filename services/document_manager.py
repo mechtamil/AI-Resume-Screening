@@ -2,12 +2,12 @@
 ============================================================
 RecruitOS
 Document Manager
-Version : 0.6
+Version : 0.7
 Author  : Tamilvanan A
 
 Description:
-Reads any supported document by automatically selecting
-the correct reader.
+Reads any supported document, automatically selects
+the correct reader, and preprocesses the extracted text.
 
 Supported:
 ✓ PDF
@@ -22,23 +22,38 @@ from parser.pdf_reader import read_pdf
 from parser.docx_reader import read_docx
 from parser.txt_reader import read_txt
 
+from services.extraction_service import ExtractionService
+
 
 class DocumentManager:
+    """
+    Responsible for reading any supported document and
+    returning a standardized processed document.
+    """
 
     @staticmethod
-    def read_document(file_path: str) -> str:
+    def read_document(file_path: str) -> dict:
 
         extension = Path(file_path).suffix.lower()
 
         if extension == ".pdf":
-            return read_pdf(file_path)
+            raw_text = read_pdf(file_path)
 
         elif extension == ".docx":
-            return read_docx(file_path)
+            raw_text = read_docx(file_path)
 
         elif extension == ".txt":
-            return read_txt(file_path)
+            raw_text = read_txt(file_path)
 
-        raise ValueError(
-            f"Unsupported file type: {extension}"
-        )
+        else:
+            raise ValueError(
+                f"Unsupported file type: {extension}"
+            )
+
+        processed_document = ExtractionService.preprocess_document(raw_text)
+
+        processed_document["file_name"] = Path(file_path).name
+        processed_document["file_type"] = extension
+        processed_document["file_path"] = str(file_path)
+
+        return processed_document
