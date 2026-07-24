@@ -1,15 +1,40 @@
 from models.match_result import MatchResult
 
-result = MatchResult(
-    candidate_name="Tamilvanan",
-    matched_skills=["Python", "Streamlit"],
-    missing_skills=["SQL"],
-    additional_skills=["Power BI"],
-    skill_match_percentage=66.67,
-    overall_match_percentage=74,
-    recommendation="Shortlist"
+
+result = MatchResult()
+
+result.candidate_name = "Tamilvanan A"
+
+result.skill_score = 90
+
+result.experience_score = 95
+
+result.education_score = 85
+
+result.certification_score = 70
+
+result.keyword_score = 92
+
+result.overall_score = 89.4
+
+result.recommendation = "Highly Recommended"
+
+result.matched_skills = [
+    "Python",
+    "SQL",
+    "Docker"
+]
+
+result.missing_skills = [
+    "AWS"
+]
+
+result.add_remark(
+    "Matched 3 of 4 mandatory skills."
 )
 
-print(result.summary())
+result.display()
 
-print(result.is_shortlisted())
+print()
+
+print(result.summary())
