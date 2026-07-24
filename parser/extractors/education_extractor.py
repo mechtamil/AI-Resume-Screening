@@ -2,19 +2,19 @@
 ============================================================
 RecruitOS
 
-Module      : Certification Extractor
+Module      : Education Extractor
 Sprint      : 5.6.0
-Version     : 2.0.0
+Version     : 1.0.0
 Author      : Tamilvanan A
 
 Purpose:
-Extracts standardized certifications from resume text using
-CertificationRepository.
+Extracts standardized education qualifications from resume
+text using EducationRepository.
 
 Important:
-- No certification names are hardcoded.
-- Certification names and aliases come entirely from:
-  RecruitOS_Configuration.xlsx -> Certifications sheet.
+- No education values are hardcoded.
+- All degrees and aliases come from:
+  RecruitOS_Configuration.xlsx -> Education sheet.
 
 ============================================================
 """
@@ -24,26 +24,23 @@ from __future__ import annotations
 import re
 from typing import List
 
-from services.certification_repository import (
-    CertificationRepository
-)
+from services.education_repository import EducationRepository
 
 
-class CertificationExtractor:
+class EducationExtractor:
     """
-    Configuration-driven Certification Extractor.
+    Configuration-driven Education Extractor.
 
-    Searches:
+    Detects both:
 
-        - Standard certification names
+        - Standard education names
         - Configured aliases
 
-    Returns:
-
-        Standardized certification names
+    Every match is returned using the standardized education
+    name defined in RecruitOS_Configuration.xlsx.
     """
 
-    repository = CertificationRepository()
+    repository = EducationRepository()
 
     # ========================================================
     # Pattern Builder
@@ -54,10 +51,18 @@ class CertificationExtractor:
         value: str
     ) -> re.Pattern:
         """
-        Build safe case-insensitive text search pattern.
+        Build a safe case-insensitive search pattern.
 
-        Lookarounds help prevent short certification aliases
-        from matching inside unrelated larger words.
+        Lookarounds prevent short aliases from matching inside
+        unrelated larger words.
+
+        Example:
+
+            Alias: BE
+
+        should not match:
+
+            "member"
         """
 
         escaped_value = re.escape(
@@ -80,8 +85,8 @@ class CertificationExtractor:
         value: str
     ) -> bool:
         """
-        Check whether a configured certification name or alias
-        occurs in resume text.
+        Check whether a configured education value occurs in
+        the resume text.
         """
 
         if not text or not value:
@@ -98,7 +103,7 @@ class CertificationExtractor:
         )
 
     # ========================================================
-    # Extract Certifications
+    # Extract Education
     # ========================================================
 
     @classmethod
@@ -107,9 +112,19 @@ class CertificationExtractor:
         text: str
     ) -> List[str]:
         """
-        Extract standardized certifications from resume text.
+        Extract standardized education qualifications.
 
-        Duplicate certifications are removed.
+        Workflow:
+
+            Resume Text
+                ↓
+        Standard Degree + Aliases
+                ↓
+        EducationRepository
+                ↓
+        Standardized Education List
+
+        Duplicate qualifications are removed.
         """
 
         if not text:
@@ -120,19 +135,24 @@ class CertificationExtractor:
 
         seen = set()
 
-        for certification in (
-            cls.repository.get_all_certifications()
+        for degree in (
+            cls.repository.get_all_degrees()
         ):
 
             search_values = [
-                certification
+                degree
             ]
 
             search_values.extend(
                 cls.repository.get_aliases(
-                    certification
+                    degree
                 )
             )
+
+            # Longer strings first.
+            #
+            # This improves deterministic matching when both
+            # a full name and shorter alias are configured.
 
             search_values = sorted(
                 search_values,
@@ -158,19 +178,18 @@ class CertificationExtractor:
 
                 continue
 
-            standard_certification = (
-                cls.repository
-                .normalize_certification(
-                    certification
+            standard_degree = (
+                cls.repository.normalize_degree(
+                    degree
                 )
             )
 
-            if not standard_certification:
+            if not standard_degree:
 
                 continue
 
             normalized_standard = (
-                standard_certification
+                standard_degree
                 .strip()
                 .lower()
             )
@@ -185,7 +204,7 @@ class CertificationExtractor:
                 )
 
                 extracted.append(
-                    standard_certification
+                    standard_degree
                 )
 
         return extracted
@@ -198,7 +217,7 @@ if __name__ == "__main__":
     """
 
     print(
-        CertificationExtractor.extract(
+        EducationExtractor.extract(
             sample_text
         )
     )
