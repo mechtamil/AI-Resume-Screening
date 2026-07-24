@@ -1,114 +1,58 @@
-"""
-============================================================
-RecruitOS
-Results Screen
-Version : 1.0
-Author  : Tamilvanan A
+"""Streamlit screening-results dashboard."""
+from __future__ import annotations
 
-Description:
-Displays parsed Job Description and Candidate details.
-============================================================
-"""
-
+import pandas as pd
 import streamlit as st
 
 
-def show():
-
+def show() -> None:
     st.title("📊 Resume Screening Results")
-
     result = st.session_state.get("analysis_result")
-
-    if result is None:
-        st.warning("No analysis available.")
+    if not result:
+        st.warning("No analysis is available. Run Resume Screening first.")
         return
 
-    # -----------------------------
-    # Job Description
-    # -----------------------------
     jd = result["job_description"]
+    matches = result.get("match_results", [])
 
-    st.header("Job Description")
+    st.subheader("Job Description")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Job Title", jd.job_title or "Not detected")
+    col2.metric("Experience", f"{jd.experience_min:g}–{jd.experience_max:g} years")
+    col3.metric("Candidates", len(matches))
+    st.write("**Mandatory Skills:**", ", ".join(jd.mandatory_skills) or "None")
+    st.write("**Preferred Skills:**", ", ".join(jd.preferred_skills) or "None")
 
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.write("**Job Title**")
-        st.write(jd.job_title)
-
-        st.write("**Experience**")
-        st.write(
-            f"{jd.experience_min} - {jd.experience_max} Years"
-        )
-
-    with col2:
-        st.write("**Mandatory Skills**")
-        st.write(len(jd.mandatory_skills))
-
-        st.write("**Preferred Skills**")
-        st.write(len(jd.preferred_skills))
-
-    if jd.mandatory_skills:
-
-        st.subheader("Mandatory Skills")
-
-        st.write(jd.mandatory_skills)
-
-    # -----------------------------
-    # Candidates
-    # -----------------------------
-    st.divider()
-
-    st.header("Candidates")
-
-    candidates = result["candidates"]
-
-    if len(candidates) == 0:
-
-        st.info("No resumes processed.")
-
+    if not matches:
+        st.info("No candidates were successfully processed.")
         return
 
-    for index, candidate in enumerate(candidates, start=1):
+    rows = [item.summary() for item in matches]
+    st.subheader("Candidate Ranking")
+    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
-        with st.expander(f"{index}. {candidate.full_name}"):
-
+    st.subheader("Candidate Details")
+    for item in matches:
+        label = f"#{item.rank} {item.candidate_name or item.source_file} — {item.overall_match_percentage:.2f}% — {item.recommendation}"
+        with st.expander(label):
             col1, col2 = st.columns(2)
-
             with col1:
-
-                st.write("**Email**")
-
-                st.write(candidate.email)
-
-                st.write("**Phone**")
-
-                st.write(candidate.phone)
-
+                st.write("**Matched mandatory skills**", item.matched_skills or "None")
+                st.write("**Missing mandatory skills**", item.missing_skills or "None")
+                st.write("**Matched preferred skills**", item.matched_preferred_skills or "None")
             with col2:
+                st.write("**Experience score**", f"{item.experience_score:.2f}%")
+                st.write("**Education score**", f"{item.education_score:.2f}%")
+                st.write("**Certification score**", f"{item.certification_score:.2f}%")
+                st.write("**Keyword score**", f"{item.keyword_score:.2f}%")
+            st.write("**Weighted score breakdown**", item.weighted_score_breakdown)
+            if item.remarks:
+                st.write("**Remarks**")
+                for remark in item.remarks:
+                    st.write(f"• {remark}")
 
-                st.write("**Experience**")
-
-                st.write(candidate.total_experience)
-
-                st.write("**Skills**")
-
-                st.write(candidate.total_skills())
-
-            if candidate.technical_skills:
-
-                st.write("### Technical Skills")
-
-                st.write(candidate.technical_skills)
-
-            if candidate.tools:
-
-                st.write("### Tools")
-
-                st.write(candidate.tools)
-
-            if candidate.projects:
-
-                st.write("### Projects")
-
-                st.write(candidate.projects)
+    errors = result.get("errors", [])
+    if errors:
+        st.subheader("Processing Errors")
+        for error in errors:
+            st.error(f"{error['file']}: {error['error']}")

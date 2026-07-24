@@ -1,117 +1,53 @@
-"""
-============================================================
-RecruitOS - AI Recruitment Platform
-Module : Settings
-Version: 0.4.0
-Author : Tamilvanan A
-============================================================
-"""
+"""Application-level settings for RecruitOS.
 
-from pathlib import Path
+Filesystem paths live in :mod:`config.paths`. This module exposes application
+metadata, supported file types, upload limits, and compatibility aliases used
+by older modules.
+"""
+from __future__ import annotations
 
-# ============================================================
-# Application Information
-# ============================================================
+from config.paths import (
+    DATABASE_PATH,
+    LOG_FILE,
+    OUTPUT_DIR,
+    TEMP_DIR,
+    UPLOAD_JD_DIR,
+    UPLOAD_RESUME_DIR,
+    UPLOAD_SKILL_LIST_DIR,
+    VERSION_FILE,
+)
 
 APP_NAME = "RecruitOS"
-
-VERSION = "0.4.0"
-
 AUTHOR = "Tamilvanan A"
-
 COMPANY = "RecruitOS Enterprise"
 
-# ============================================================
-# Project Root
-# ============================================================
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+def _read_version() -> str:
+    try:
+        value = VERSION_FILE.read_text(encoding="utf-8").strip()
+    except OSError:
+        return "0.0.0-dev"
+    return value or "0.0.0-dev"
 
-# ============================================================
-# Folder Structure
-# ============================================================
 
-RESUME_FOLDER = PROJECT_ROOT / "Resume"
+VERSION = _read_version()
 
-JD_FOLDER = PROJECT_ROOT / "JD"
-
-SKILL_LIST_FOLDER = PROJECT_ROOT / "Skill_List"
-
-OUTPUT_FOLDER = PROJECT_ROOT / "output"
-
-TEMP_FOLDER = PROJECT_ROOT / "temp"
-
-LOG_FOLDER = PROJECT_ROOT / "logs"
-
-DATABASE_FOLDER = PROJECT_ROOT / "database"
-
-# ============================================================
-# Required Folder List
-# ============================================================
-
-REQUIRED_FOLDERS = [
-    RESUME_FOLDER,
-    JD_FOLDER,
-    SKILL_LIST_FOLDER,
-    OUTPUT_FOLDER,
-    TEMP_FOLDER,
-    LOG_FOLDER,
-    DATABASE_FOLDER
-]
-
-# ============================================================
-# Automatically Create Folders
-# ============================================================
-
-for folder in REQUIRED_FOLDERS:
-    folder.mkdir(parents=True, exist_ok=True)
-
-# ============================================================
-# Supported File Types
-# ============================================================
-
-SUPPORTED_RESUME_TYPES = [
-    ".pdf",
-    ".docx",
-    ".txt"
-]
-
-SUPPORTED_JD_TYPES = [
-    ".pdf",
-    ".docx",
-    ".txt"
-]
-
-SUPPORTED_SKILL_TYPES = [
-    ".xlsx",
-    ".csv",
-    ".txt"
-]
-
-# ============================================================
-# Upload Limits
-# ============================================================
+SUPPORTED_RESUME_TYPES = (".pdf", ".docx", ".txt")
+SUPPORTED_JD_TYPES = (".pdf", ".docx", ".txt")
+SUPPORTED_SKILL_TYPES = (".xlsx", ".csv", ".txt")
+SUPPORTED_EXTENSIONS = tuple(
+    sorted(set(SUPPORTED_RESUME_TYPES + SUPPORTED_JD_TYPES + SUPPORTED_SKILL_TYPES))
+)
 
 MAX_FILE_SIZE_MB = 20
-
 MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
-
-# ============================================================
-# Report Configuration
-# ============================================================
-
 DEFAULT_REPORT_NAME = "Candidate_Report.xlsx"
 
-# ============================================================
-# Logging
-# ============================================================
-
-LOG_FILE = LOG_FOLDER / "recruitos.log"
-
-# ============================================================
-# Database
-# ============================================================
-
-DATABASE_NAME = "recruitos.db"
-
-DATABASE_PATH = DATABASE_FOLDER / DATABASE_NAME
+# Compatibility aliases. New code should prefer config.paths directly.
+JD_FOLDER = UPLOAD_JD_DIR
+RESUME_FOLDER = UPLOAD_RESUME_DIR
+SKILL_LIST_FOLDER = UPLOAD_SKILL_LIST_DIR
+OUTPUT_FOLDER = OUTPUT_DIR
+TEMP_FOLDER = TEMP_DIR
+DATABASE_FOLDER = DATABASE_PATH.parent
+DATABASE_NAME = DATABASE_PATH.name

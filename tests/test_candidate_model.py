@@ -1,32 +1,14 @@
+import unittest
 from models.candidate import Candidate
 
 
-def main():
-
-    candidate = Candidate()
-
-    candidate.full_name = "Tamil"
-
-    candidate.total_experience = 6
-
-    candidate.technical_skills.extend([
-        "XML",
-        "DITA",
-        "Python"
-    ])
-
-    candidate.tools.extend([
-        "Arbortext",
-        "LISA"
-    ])
-
-    candidate.projects.extend([
-        "Volvo SPI",
-        "Volvo TI"
-    ])
-
-    print(candidate.summary())
+class CandidateModelTests(unittest.TestCase):
+    def test_summary_and_counts(self):
+        candidate = Candidate(full_name="Test Candidate", technical_skills=["Python"], tools=["Git"], certifications=["Cert"])
+        self.assertEqual(candidate.total_skills(), 2)
+        self.assertEqual(candidate.total_certifications(), 1)
+        self.assertEqual(candidate.summary()["Candidate"], "Test Candidate")
 
 
 if __name__ == "__main__":
-    main()
+    unittest.main()

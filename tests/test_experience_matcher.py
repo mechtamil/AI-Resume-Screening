@@ -1,44 +1,19 @@
-from models.candidate import Candidate
+import unittest
 from JD.jd_model import JobDescription
+from models.candidate import Candidate
 from models.match_result import MatchResult
-
-from services.matching.experience_matcher import (
-    ExperienceMatcher
-)
-
-candidate = Candidate()
-
-candidate.full_name = "Tamilvanan A"
-
-candidate.total_experience = 6
+from services.matching.experience_matcher import ExperienceMatcher
 
 
-job = JobDescription()
-
-job.job_title = "Python Developer"
-
-job.experience_min = 5
-
-
-result = MatchResult()
-
-result.candidate_name = candidate.full_name
-
-result.job_title = job.job_title
+class ExperienceMatcherTests(unittest.TestCase):
+    def test_partial_and_full_score(self):
+        job = JobDescription(experience_min=4, experience_max=8)
+        low = ExperienceMatcher.match(Candidate(total_experience=2), job, MatchResult())
+        self.assertFalse(low.experience_match)
+        self.assertEqual(low.experience_score, 50.0)
+        high = ExperienceMatcher.match(Candidate(total_experience=6), job, MatchResult())
+        self.assertTrue(high.experience_match)
+        self.assertEqual(high.experience_score, 100.0)
 
 
-result = ExperienceMatcher.match(
-
-    candidate,
-
-    job,
-
-    result
-
-)
-
-result.display()
-
-print()
-
-print(result.summary())
+if __name__ == "__main__": unittest.main()

@@ -1,39 +1,15 @@
+import unittest
 from JD.jd_model import JobDescription
+from models.job_description import JobDescription as CompatibilityJobDescription
 
 
-def main():
-
-    jd = JobDescription()
-
-    jd.job_title = "Technical Writer"
-
-    jd.company_name = "ALTEN"
-
-    jd.experience_min = 3
-
-    jd.experience_max = 6
-
-    jd.mandatory_skills.extend([
-        "XML",
-        "DITA",
-        "Arbortext"
-    ])
-
-    jd.preferred_skills.extend([
-        "KOLA",
-        "LISA"
-    ])
-
-    print("Job Title :", jd.job_title)
-
-    print("Company :", jd.company_name)
-
-    print("Mandatory Skills :", jd.total_required_skills())
-
-    print("Preferred Skills :", jd.total_preferred_skills())
-
-    print(jd.summary())
+class JobDescriptionModelTests(unittest.TestCase):
+    def test_single_authoritative_model(self):
+        self.assertIs(JobDescription, CompatibilityJobDescription)
+        job = JobDescription(job_title="Engineer", mandatory_skills=["Python"])
+        self.assertEqual(job.total_required_skills(), 1)
+        self.assertEqual(job.summary()["Job Title"], "Engineer")
 
 
 if __name__ == "__main__":
-    main()
+    unittest.main()

@@ -1,59 +1,33 @@
-"""
-============================================================
-RecruitOS
-Document Manager
-Version : 0.7
-Author  : Tamilvanan A
-
-Description:
-Reads any supported document, automatically selects
-the correct reader, and preprocesses the extracted text.
-
-Supported:
-✓ PDF
-✓ DOCX
-✓ TXT
-============================================================
-"""
+"""Read supported documents and return a standardized processed-document contract."""
+from __future__ import annotations
 
 from pathlib import Path
 
-from parser.pdf_reader import read_pdf
 from parser.docx_reader import read_docx
+from parser.pdf_reader import read_pdf
 from parser.txt_reader import read_txt
-
 from services.extraction_service import ExtractionService
 
 
 class DocumentManager:
-    """
-    Responsible for reading any supported document and
-    returning a standardized processed document.
-    """
+    READERS = {".pdf": read_pdf, ".docx": read_docx, ".txt": read_txt}
 
-    @staticmethod
-    def read_document(file_path: str) -> dict:
-
-        extension = Path(file_path).suffix.lower()
-
-        if extension == ".pdf":
-            raw_text = read_pdf(file_path)
-
-        elif extension == ".docx":
-            raw_text = read_docx(file_path)
-
-        elif extension == ".txt":
-            raw_text = read_txt(file_path)
-
-        else:
-            raise ValueError(
-                f"Unsupported file type: {extension}"
-            )
-
-        processed_document = ExtractionService.preprocess_document(raw_text)
-
-        processed_document["file_name"] = Path(file_path).name
-        processed_document["file_type"] = extension
-        processed_document["file_path"] = str(file_path)
-
-        return processed_document
+    @classmethod
+    def read_document(cls, file_path: str | Path) -> dict:
+        path = Path(file_path)
+        if not path.is_file():
+            raise FileNotFoundError(f"Document not found: {path}")
+        extension = path.suffix.lower()
+        reader = cls.READERS.get(extension)
+        if reader is None:
+            raise ValueError(f"Unsupported file type: {extension or '<none>'}")
+        raw_text = reader(path)
+        processed = ExtractionService.preprocess_document(raw_text)
+        processed.update(
+            {
+                "file_name": path.name,
+                "file_type": extension,
+                "file_path": str(path),
+            }
+        )
+        return processed

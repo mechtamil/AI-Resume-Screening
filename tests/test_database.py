@@ -1,10 +1,19 @@
-
+import tempfile
+import unittest
+from pathlib import Path
 from database.database import Database
 
-db = Database()
 
-db.create_tables()
+class DatabaseTests(unittest.TestCase):
+    def test_create_tables_in_temporary_database(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.db"
+            db = Database(path)
+            db.create_tables()
+            names = {row[0] for row in db.cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+            db.close()
+            self.assertTrue({"recruitment_projects", "candidates", "resumes"}.issubset(names))
 
-print("RecruitOS Database Created Successfully.")
 
-db.close()
+if __name__ == "__main__":
+    unittest.main()

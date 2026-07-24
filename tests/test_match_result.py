@@ -1,40 +1,15 @@
+import unittest
 from models.match_result import MatchResult
 
 
-result = MatchResult()
+class MatchResultTests(unittest.TestCase):
+    def test_shortlist_is_explicit_not_hardcoded_score(self):
+        result = MatchResult(overall_match_percentage=99, shortlisted=False)
+        self.assertFalse(result.is_shortlisted())
+        result.shortlisted = True
+        self.assertTrue(result.is_shortlisted())
+        result.add_remark("Test")
+        self.assertEqual(result.remarks, ["Test"])
 
-result.candidate_name = "Tamilvanan A"
 
-result.skill_score = 90
-
-result.experience_score = 95
-
-result.education_score = 85
-
-result.certification_score = 70
-
-result.keyword_score = 92
-
-result.overall_score = 89.4
-
-result.recommendation = "Highly Recommended"
-
-result.matched_skills = [
-    "Python",
-    "SQL",
-    "Docker"
-]
-
-result.missing_skills = [
-    "AWS"
-]
-
-result.add_remark(
-    "Matched 3 of 4 mandatory skills."
-)
-
-result.display()
-
-print()
-
-print(result.summary())
+if __name__ == "__main__": unittest.main()

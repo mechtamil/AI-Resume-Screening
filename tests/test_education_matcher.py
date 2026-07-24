@@ -1,49 +1,18 @@
-from models.candidate import Candidate
+import unittest
 from JD.jd_model import JobDescription
+from models.candidate import Candidate
 from models.match_result import MatchResult
+from services.matching.education_matcher import EducationMatcher
 
-from services.matching.education_matcher import (
-    EducationMatcher
-)
 
-candidate = Candidate()
+class EducationMatcherTests(unittest.TestCase):
+    def test_match_and_no_requirement(self):
+        job = JobDescription(education=["Bachelor of Engineering"])
+        result = EducationMatcher.match(Candidate(education=["Bachelor of Engineering"]), job, MatchResult())
+        self.assertTrue(result.education_match)
+        self.assertEqual(result.education_score, 100.0)
+        neutral = EducationMatcher.match(Candidate(), JobDescription(), MatchResult())
+        self.assertEqual(neutral.education_score, 100.0)
 
-candidate.full_name = "Tamilvanan A"
 
-candidate.education = [
-
-    "B.E Mechanical Engineering"
-
-]
-
-job = JobDescription()
-
-job.job_title = "Technical Documentation Engineer"
-
-job.education = [
-
-    "B.E Mechanical Engineering"
-
-]
-
-result = MatchResult()
-
-result.candidate_name = candidate.full_name
-
-result.job_title = job.job_title
-
-result = EducationMatcher.match(
-
-    candidate,
-
-    job,
-
-    result
-
-)
-
-result.display()
-
-print()
-
-print(result.summary())
+if __name__ == "__main__": unittest.main()

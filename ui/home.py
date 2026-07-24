@@ -1,45 +1,27 @@
+"""RecruitOS home page."""
 import streamlit as st
 
 
-def show_home():
-
+def show_home() -> None:
     st.title("🤖 RecruitOS")
-
-    st.subheader("AI Recruitment Platform")
-
-    st.markdown("---")
-
-    st.success("Welcome Tamilvanan!")
-
-    st.write(
-        """
-RecruitOS helps recruiters:
-
-- Upload resumes
-- Compare resumes with Job Descriptions
-- Rank candidates
-- Generate interview questions
-- Export reports
-"""
+    st.subheader("AI Resume Screening & Recruitment Platform")
+    st.markdown(
+        "Upload a Job Description and one or more resumes to parse, standardize, "
+        "score, rank, and review candidates using configuration-driven rules."
     )
 
-    st.markdown("---")
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric("Resumes Processed", "0")
-
-    with col2:
-        st.metric("Candidates Shortlisted", "0")
-
-    with col3:
-        st.metric("Average Match", "0%")
-
-    st.markdown("---")
-
-    if st.button("🚀 Start Resume Screening"):
-
-        st.session_state.page = "Resume Screening"
-
-        st.success("Please select 'Resume Screening' from the left menu.")
+    result = st.session_state.get("analysis_result")
+    if result:
+        summary = result.get("summary", {})
+        matches = result.get("match_results", [])
+        shortlisted = sum(1 for item in matches if item.shortlisted)
+        average = (
+            sum(item.overall_match_percentage for item in matches) / len(matches)
+            if matches else 0.0
+        )
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Resumes Processed", summary.get("resumes_processed", 0))
+        col2.metric("Candidates Shortlisted", shortlisted)
+        col3.metric("Average Match", f"{average:.1f}%")
+    else:
+        st.info("No screening run is loaded in this session yet.")

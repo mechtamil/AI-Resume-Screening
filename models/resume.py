@@ -3,7 +3,6 @@
 ============================================================
 RecruitOS - AI Recruitment Platform
 Module      : Resume Model
-Version     : 0.3.1
 Author      : Tamilvanan A
 
 Description:

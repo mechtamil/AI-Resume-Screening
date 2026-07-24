@@ -1,26 +1,16 @@
-"""
-============================================================
-RecruitOS
-TXT Reader
-Version : 0.6
-Author  : Tamilvanan A
+"""Plain-text document reader."""
+from __future__ import annotations
 
-Description:
-Reads text files and returns the content.
-============================================================
-"""
+from pathlib import Path
 
 
-def read_txt(file_path: str) -> str:
-    """
-    Read a TXT file and return its content.
-
-    Args:
-        file_path (str): Path to the text file.
-
-    Returns:
-        str: File content.
-    """
-
-    with open(file_path, "r", encoding="utf-8") as file:
-        return file.read()
+def read_txt(file_path: str | Path) -> str:
+    path = Path(file_path)
+    if not path.is_file():
+        raise FileNotFoundError(f"Text file not found: {path}")
+    try:
+        return path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        return path.read_text(encoding="utf-8-sig")
+    except OSError as exc:
+        raise RuntimeError(f"Unable to read text file: {path}") from exc

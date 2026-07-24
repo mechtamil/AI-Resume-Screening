@@ -4,7 +4,6 @@ RecruitOS
 
 Module      : Base Repository
 Sprint      : 5.5.1
-Version     : 1.0.0
 Author       : Tamilvanan A
 
 Purpose:

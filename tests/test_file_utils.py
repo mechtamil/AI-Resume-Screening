@@ -1,12 +1,20 @@
-"""
-Simple test for file utilities
-"""
-
-from utils.file_utils import get_extension
+import unittest
+from utils.file_utils import get_extension, is_supported, validate
 
 
-print(get_extension("resume.pdf"))
+class FakeUpload:
+    def __init__(self, name="resume.pdf", size=100):
+        self.name = name
+        self.size = size
 
-print(get_extension("candidate.docx"))
 
-print(get_extension("sample.txt"))
+class FileUtilsTests(unittest.TestCase):
+    def test_extension_and_validation(self):
+        self.assertEqual(get_extension("Resume.PDF"), ".pdf")
+        self.assertTrue(is_supported("resume.pdf"))
+        self.assertEqual(validate(FakeUpload()), [])
+        self.assertTrue(validate(FakeUpload("malware.exe")))
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,40 +1,17 @@
-"""
-==========================================================
-AI Recruitment Assistant
-Version : 0.2
-Module  : DOCX Reader
-==========================================================
-"""
+"""DOCX text reader."""
+from __future__ import annotations
+
+from pathlib import Path
 
 from docx import Document
-import logging
 
 
-def read_docx(file_path):
-    """
-    Reads a DOCX file and returns its text.
-    """
-
+def read_docx(file_path: str | Path) -> str:
+    path = Path(file_path)
+    if not path.is_file():
+        raise FileNotFoundError(f"DOCX file not found: {path}")
     try:
-
-        document = Document(file_path)
-
-        text = ""
-
-        for paragraph in document.paragraphs:
-
-            if paragraph.text.strip():
-
-                text += paragraph.text + "\n"
-
-        logging.info(f"DOCX Read Successfully : {file_path}")
-
-        return text
-
-    except Exception as error:
-
-        logging.error(f"Unable to read DOCX : {file_path}")
-
-        logging.error(error)
-
-        return ""
+        document = Document(path)
+        return "\n".join(paragraph.text for paragraph in document.paragraphs if paragraph.text.strip())
+    except Exception as exc:
+        raise RuntimeError(f"Unable to read DOCX: {path}") from exc

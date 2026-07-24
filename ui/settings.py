@@ -1,5 +1,4 @@
-APP_NAME = "RecruitOS"
+"""UI settings compatibility module."""
+from config.settings import APP_NAME, AUTHOR, VERSION
 
-VERSION = "0.2"
-
-AUTHOR = "Tamilvanan A"
+__all__ = ["APP_NAME", "AUTHOR", "VERSION"]

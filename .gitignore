@@ -1,23 +1,48 @@
-# Python
+# Python bytecode / caches
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
+.mypy_cache/
 
-# Virtual Environment
+# Virtual environments
 .venv/
 venv/
 env/
 
-# IDE
+# IDE / OS
 .vscode/
 .idea/
-
-# Streamlit Cache
-.streamlit/cache/
-
-# OS
+*.swp
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
+# Streamlit cache
+.streamlit/cache/
+
+# Runtime uploads and generated outputs
+uploads/*
+!uploads/.gitkeep
+output/*
+!output/.gitkeep
+temp/*
+!temp/.gitkeep
+logs/*
+!logs/.gitkeep
+
+# Local candidate/resume data
+Resume/*
+!Resume/.gitkeep
+JD/*.pdf
+
+# Runtime databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Legacy separate master workbooks (central workbook is authoritative)
+Master_Data/*_master.xlsx
+Master_Data/*backup*.xlsx
+
+# Keep central configuration workbook
+!Master_Data/RecruitOS_Configuration.xlsx

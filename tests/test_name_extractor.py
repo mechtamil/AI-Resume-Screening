@@ -1,35 +1,16 @@
+import unittest
 from parser.extractors.name_extractor import NameExtractor
 
-sample_resume = """
 
-Ravi Kumar
+class NameExtractorTests(unittest.TestCase):
+    def test_allows_single_letter_initial_and_skips_contact_lines(self):
+        text = "Ajay Goud G\nEmail: ajay@example.com\nExperience"
+        self.assertEqual(NameExtractor().extract(text), "Ajay Goud G")
 
-Senior Technical Writer
+    def test_skips_personal_details_heading(self):
+        text = "Personal Details\nPriyesh S\nEMAIL: p@example.com"
+        self.assertEqual(NameExtractor().extract(text), "Priyesh S")
 
-Email:
-ravi@gmail.com
 
-Phone:
-9876543210
-
-Experience
-6 Years
-
-Skills
-
-DITA
-XML
-Arbortext
-Python
-
-"""
-
-extractor = NameExtractor()
-
-name = extractor.extract(sample_resume)
-
-print()
-
-print("Candidate Name:")
-
-print(name)
+if __name__ == "__main__":
+    unittest.main()

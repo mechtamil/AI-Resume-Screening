@@ -1,47 +1,17 @@
-"""
-==========================================================
-AI Recruitment Assistant
-Version : 0.2
-Module  : PDF Reader
-==========================================================
-"""
+"""PDF text reader."""
+from __future__ import annotations
+
+from pathlib import Path
 
 import fitz
-import logging
 
 
-def read_pdf(file_path):
-    """
-    Reads a PDF file and returns its text.
-
-    Parameters
-    ----------
-    file_path : str
-
-    Returns
-    -------
-    str
-    """
-
+def read_pdf(file_path: str | Path) -> str:
+    path = Path(file_path)
+    if not path.is_file():
+        raise FileNotFoundError(f"PDF file not found: {path}")
     try:
-
-        document = fitz.open(file_path)
-
-        text = ""
-
-        for page in document:
-            text += page.get_text()
-
-        document.close()
-
-        logging.info(f"PDF Read Successfully : {file_path}")
-
-        return text
-
-    except Exception as error:
-
-        logging.error(f"Unable to read PDF : {file_path}")
-
-        logging.error(error)
-
-        return ""
+        with fitz.open(path) as document:
+            return "\n".join(page.get_text() for page in document)
+    except Exception as exc:
+        raise RuntimeError(f"Unable to read PDF: {path}") from exc

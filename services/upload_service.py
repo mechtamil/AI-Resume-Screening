@@ -1,95 +1,56 @@
-"""
-============================================================
-RecruitOS - AI Recruitment Platform
-Module : Upload Service
-Version: 0.4.0
-Author : Tamilvanan A
-============================================================
-"""
+"""Safe runtime storage for uploaded recruitment files."""
+from __future__ import annotations
 
+import re
 from pathlib import Path
-import shutil
+from uuid import uuid4
 
-from config.settings import (
-    JD_FOLDER,
-    RESUME_FOLDER,
-    SKILL_LIST_FOLDER,
-)
+from config.paths import UPLOAD_JD_DIR, UPLOAD_RESUME_DIR, UPLOAD_SKILL_LIST_DIR
+from config.settings import SUPPORTED_JD_TYPES, SUPPORTED_RESUME_TYPES, SUPPORTED_SKILL_TYPES
+from utils.file_utils import validate
 
 
 class UploadService:
-    """
-    Handles all uploaded file storage.
-    """
-
     @staticmethod
-    def save_job_description(uploaded_file):
+    def _safe_name(name: str) -> str:
+        base = Path(name or "upload").name
+        stem = re.sub(r"[^A-Za-z0-9._ -]+", "_", Path(base).stem).strip(" ._") or "upload"
+        suffix = re.sub(r"[^A-Za-z0-9.]", "", Path(base).suffix.lower())
+        return f"{stem[:120]}_{uuid4().hex[:10]}{suffix}"
 
+    @classmethod
+    def _save(cls, uploaded_file, destination_dir: Path, allowed_extensions: tuple[str, ...]) -> Path | None:
         if uploaded_file is None:
             return None
-
-        destination = JD_FOLDER / uploaded_file.name
-
-        with open(destination, "wb") as file:
-            file.write(uploaded_file.getbuffer())
-
+        errors = validate(uploaded_file, allowed_extensions)
+        if errors:
+            raise ValueError("; ".join(errors))
+        destination_dir.mkdir(parents=True, exist_ok=True)
+        destination = destination_dir / cls._safe_name(uploaded_file.name)
+        destination.write_bytes(bytes(uploaded_file.getbuffer()))
         return destination
 
-    @staticmethod
-    def save_skill_list(uploaded_file):
+    @classmethod
+    def save_job_description(cls, uploaded_file) -> Path | None:
+        return cls._save(uploaded_file, UPLOAD_JD_DIR, SUPPORTED_JD_TYPES)
 
-        if uploaded_file is None:
-            return None
+    @classmethod
+    def save_skill_list(cls, uploaded_file) -> Path | None:
+        return cls._save(uploaded_file, UPLOAD_SKILL_LIST_DIR, SUPPORTED_SKILL_TYPES)
 
-        destination = SKILL_LIST_FOLDER / uploaded_file.name
+    @classmethod
+    def save_resume(cls, uploaded_file) -> Path | None:
+        return cls._save(uploaded_file, UPLOAD_RESUME_DIR, SUPPORTED_RESUME_TYPES)
 
-        with open(destination, "wb") as file:
-            file.write(uploaded_file.getbuffer())
-
-        return destination
-
-    @staticmethod
-    def save_resume(uploaded_file):
-
-        if uploaded_file is None:
-            return None
-
-        destination = RESUME_FOLDER / uploaded_file.name
-
-        with open(destination, "wb") as file:
-            file.write(uploaded_file.getbuffer())
-
-        return destination
+    @classmethod
+    def save_multiple_resumes(cls, uploaded_files) -> list[Path]:
+        return [path for path in (cls.save_resume(item) for item in (uploaded_files or [])) if path]
 
     @staticmethod
-    def save_multiple_resumes(uploaded_files):
-
-        saved_files = []
-
-        if not uploaded_files:
-            return saved_files
-
-        for uploaded_file in uploaded_files:
-
-            destination = RESUME_FOLDER / uploaded_file.name
-
-            with open(destination, "wb") as file:
-                file.write(uploaded_file.getbuffer())
-
-            saved_files.append(destination)
-
-        return saved_files
-
-    @staticmethod
-    def clear_folder(folder_path: Path):
-
+    def clear_folder(folder_path: Path) -> None:
+        """Remove runtime files only; caller controls which runtime directory is supplied."""
         if not folder_path.exists():
             return
-
         for item in folder_path.iterdir():
-
             if item.is_file():
                 item.unlink()
-
-            elif item.is_dir():
-                shutil.rmtree(item)

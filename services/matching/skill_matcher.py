@@ -1,182 +1,48 @@
-"""
-============================================================
-RecruitOS
-Enterprise Skill Matcher
+"""Mandatory/preferred skill comparison."""
+from __future__ import annotations
 
-Version : 1.0
-Author  : Tamilvanan A
-
-Description:
-Compares Candidate skills with Job Description skills.
-
-Responsibilities:
-    • Identify matched skills
-    • Identify missing skills
-    • Identify additional skills
-    • Calculate skill score
-    • Generate AI remarks
-
-Output:
-    MatchResult
-============================================================
-"""
-
-from models.match_result import MatchResult
-from models.candidate import Candidate
 from JD.jd_model import JobDescription
+from models.candidate import Candidate
+from models.match_result import MatchResult
 
 
 class SkillMatcher:
-    """
-    Enterprise Skill Matcher.
-    """
-
     @staticmethod
-    def match(
-        candidate: Candidate,
-        job: JobDescription
-    ) -> MatchResult:
+    def _canonical_map(values: list[str]) -> dict[str, str]:
+        return {str(v).strip().casefold(): str(v).strip() for v in values or [] if str(v).strip()}
 
-        result = MatchResult()
-
-        # ------------------------------------------
-        # Candidate Information
-        # ------------------------------------------
-
+    @classmethod
+    def match(cls, candidate: Candidate, job: JobDescription, result: MatchResult | None = None) -> MatchResult:
+        result = result or MatchResult()
         result.candidate_name = candidate.full_name
-
         result.email = candidate.email
-
         result.phone = candidate.phone
-
         result.source_file = candidate.source_file
-
         result.job_title = job.job_title
 
-        # ------------------------------------------
-        # Normalize Skills
-        # ------------------------------------------
+        candidate_map = cls._canonical_map(candidate.technical_skills)
+        mandatory_map = cls._canonical_map(job.mandatory_skills)
+        preferred_map = cls._canonical_map(job.preferred_skills)
 
-        candidate_skills = {
+        matched_keys = sorted(set(candidate_map) & set(mandatory_map))
+        missing_keys = sorted(set(mandatory_map) - set(candidate_map))
+        preferred_matched = sorted(set(candidate_map) & set(preferred_map))
+        preferred_missing = sorted(set(preferred_map) - set(candidate_map))
+        required_keys = set(mandatory_map) | set(preferred_map)
+        additional_keys = sorted(set(candidate_map) - required_keys)
 
-            skill.strip().lower()
+        result.matched_skills = [mandatory_map[k] for k in matched_keys]
+        result.missing_skills = [mandatory_map[k] for k in missing_keys]
+        result.matched_preferred_skills = [preferred_map[k] for k in preferred_matched]
+        result.missing_preferred_skills = [preferred_map[k] for k in preferred_missing]
+        result.additional_skills = [candidate_map[k] for k in additional_keys]
 
-            for skill in candidate.technical_skills
-
-            if skill.strip()
-        }
-
-        mandatory_skills = {
-
-            skill.strip().lower()
-
-            for skill in job.mandatory_skills
-
-            if skill.strip()
-        }
-
-        # ------------------------------------------
-        # Matched Skills
-        # ------------------------------------------
-
-        result.matched_skills = sorted(
-
-            list(
-
-                mandatory_skills.intersection(
-                    candidate_skills
-                )
-
-            )
-
-        )
-
-        # ------------------------------------------
-        # Missing Skills
-        # ------------------------------------------
-
-        result.missing_skills = sorted(
-
-            list(
-
-                mandatory_skills.difference(
-                    candidate_skills
-                )
-
-            )
-
-        )
-
-        # ------------------------------------------
-        # Additional Skills
-        # ------------------------------------------
-
-        result.additional_skills = sorted(
-
-            list(
-
-                candidate_skills.difference(
-                    mandatory_skills
-                )
-
-            )
-
-        )
-
-        # ------------------------------------------
-        # Skill Score
-        # ------------------------------------------
-
-        total_required = len(
-            mandatory_skills
-        )
-
-        if total_required == 0:
-
-            result.skill_score = 100.0
-
+        if mandatory_map:
+            result.skill_score = round(len(matched_keys) / len(mandatory_map) * 100, 2)
+            result.add_remark(f"Matched {len(matched_keys)} of {len(mandatory_map)} mandatory skills.")
         else:
-
-            result.skill_score = round(
-
-                (
-                    len(result.matched_skills)
-                    / total_required
-                )
-                * 100,
-
-                2
-
-            )
-
-        # ------------------------------------------
-        # AI Remarks
-        # ------------------------------------------
-
-        result.add_remark(
-
-            f"Matched {len(result.matched_skills)} of "
-            f"{total_required} mandatory skills."
-
-        )
-
-        if result.additional_skills:
-
-            result.add_remark(
-
-                f"Candidate has "
-                f"{len(result.additional_skills)} "
-                f"additional skills."
-
-            )
-
-        if result.missing_skills:
-
-            result.add_remark(
-
-                f"{len(result.missing_skills)} "
-                f"mandatory skills are missing."
-
-            )
-
+            result.skill_score = 100.0
+            result.add_remark("No mandatory skill requirement specified.")
+        if preferred_map:
+            result.add_remark(f"Matched {len(preferred_matched)} of {len(preferred_map)} preferred skills.")
         return result

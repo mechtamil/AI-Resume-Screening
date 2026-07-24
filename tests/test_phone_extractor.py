@@ -1,25 +1,12 @@
+import unittest
 from parser.extractors.phone_extractor import PhoneExtractor
 
-sample_resume = """
-Ravi Kumar
 
-Technical Writer
+class PhoneExtractorTests(unittest.TestCase):
+    def test_extract_indian_mobile(self):
+        result = PhoneExtractor().extract("Call +91 9876543210")
+        self.assertEqual(result["value"], "9876543210")
 
-Email : ravi@gmail.com
 
-Phone : +91 9876543210
-
-Experience : 6 Years
-"""
-
-extractor = PhoneExtractor()
-
-result = extractor.extract(sample_resume)
-
-print()
-
-print("Phone Extraction Result")
-
-print("-----------------------")
-
-print(result)
+if __name__ == "__main__":
+    unittest.main()

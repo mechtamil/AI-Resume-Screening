@@ -2,7 +2,6 @@
 ============================================================
 RecruitOS - AI Recruitment Platform
 Module      : Recruitment Project Model
-Version     : 0.4.0
 Author      : Tamilvanan A
 
 Description:

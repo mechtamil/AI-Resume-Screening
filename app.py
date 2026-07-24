@@ -1,52 +1,34 @@
+"""RecruitOS Streamlit application entry point."""
 import streamlit as st
 
+from config.settings import VERSION
 from ui.home import show_home
+from ui.results import show as show_results
 from ui.resume_screening import show_resume_screening
 
-st.set_page_config(
-    page_title="RecruitOS",
-    page_icon="🤖",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+st.set_page_config(page_title="RecruitOS", page_icon="🤖", layout="wide", initial_sidebar_state="expanded")
 
-# Initialize page
-if "page" not in st.session_state:
-    st.session_state.page = "Home"
-
-# Sidebar
 st.sidebar.title("🤖 RecruitOS")
 st.sidebar.markdown("---")
-
 page = st.sidebar.radio(
     "Navigation",
-    [
-        "Home",
-        "Resume Screening",
-        "Candidate Database",
-        "Analytics",
-        "Settings"
-    ]
+    ["Home", "Resume Screening", "Results", "Candidate Database", "Analytics", "Settings"],
 )
-
 st.sidebar.markdown("---")
-st.sidebar.info("RecruitOS Version 0.2")
+st.sidebar.info(f"RecruitOS Version {VERSION}")
 
-# Page Routing
 if page == "Home":
     show_home()
-
 elif page == "Resume Screening":
     show_resume_screening()
-
+elif page == "Results":
+    show_results()
 elif page == "Candidate Database":
     st.title("👥 Candidate Database")
-    st.info("Coming Soon")
-
+    st.info("Database UI is planned for a later milestone.")
 elif page == "Analytics":
     st.title("📊 Analytics")
-    st.info("Coming Soon")
-
-elif page == "Settings":
+    st.info("Analytics is planned for a later milestone.")
+else:
     st.title("⚙ Settings")
-    st.info("Coming Soon")
+    st.info("Configuration is currently managed through Master_Data/RecruitOS_Configuration.xlsx.")

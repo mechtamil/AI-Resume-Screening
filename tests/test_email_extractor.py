@@ -1,31 +1,13 @@
+import unittest
 from parser.extractors.email_extractor import EmailExtractor
 
-sample_resume = """
-Ravi Kumar
 
-Senior Technical Writer
+class EmailExtractorTests(unittest.TestCase):
+    def test_extract(self):
+        result = EmailExtractor().extract("Contact Test.User@example.com")
+        self.assertEqual(result["value"], "test.user@example.com")
+        self.assertGreater(result["confidence"], 0)
 
-Email : Ravi.Kumar@Gmail.com
 
-Phone : 9876543210
-
-Skills
-
-DITA
-
-XML
-
-Python
-"""
-
-extractor = EmailExtractor()
-
-result = extractor.extract(sample_resume)
-
-print()
-
-print("Email Extraction Result")
-
-print("-----------------------")
-
-print(result)
+if __name__ == "__main__":
+    unittest.main()

@@ -1,50 +1,17 @@
-from models.candidate import Candidate
+import unittest
 from JD.jd_model import JobDescription
+from models.candidate import Candidate
+from services.matching.matching_orchestrator import MatchingOrchestrator
 
 
-def create_mock_result():
-
-    jd = JobDescription()
-
-    jd.job_title = "Technical Writer"
-
-    jd.experience_min = 3
-
-    jd.experience_max = 5
-
-    jd.mandatory_skills = [
-        "XML",
-        "DITA",
-        "Python"
-    ]
-
-    candidate = Candidate()
-
-    candidate.full_name = "Tamilvanan"
-
-    candidate.email = "tamil@test.com"
-
-    candidate.phone = "9876543210"
-
-    candidate.total_experience = 6
-
-    candidate.technical_skills = [
-        "Python",
-        "XML",
-        "DITA"
-    ]
-
-    return {
-
-        "job_description": jd,
-
-        "candidates": [candidate]
-
-    }
+class ResultsDataTests(unittest.TestCase):
+    def test_result_contract_contains_ranked_match(self):
+        job = JobDescription(job_title="Technical Writer", mandatory_skills=["Python"])
+        candidate = Candidate(full_name="Test Candidate", technical_skills=["Python"], raw_text="Python")
+        matches = MatchingOrchestrator().match_many(job, [candidate])
+        result = {"job_description": job, "candidates": [candidate], "match_results": matches}
+        self.assertEqual(result["match_results"][0].rank, 1)
+        self.assertEqual(result["match_results"][0].candidate_name, "Test Candidate")
 
 
-if __name__ == "__main__":
-
-    result = create_mock_result()
-
-    print(result)
+if __name__ == "__main__": unittest.main()
