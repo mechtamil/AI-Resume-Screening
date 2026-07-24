@@ -1,16 +1,17 @@
 """
 ============================================================
 RecruitOS
-Configuration - Project Paths
 
-Version : 1.0
-Author  : Tamilvanan A
+Module      : Path Configuration
+Sprint      : 5.5.0.1
+Version     : 1.0.0
+Author       : Tamilvanan A
 
-Description:
-Centralized path management for the RecruitOS project.
+Purpose:
+Centralizes all application paths.
 
-All project modules should import paths from this file
-instead of hardcoding file or folder locations.
+Every module must import paths only from here.
+
 ============================================================
 """
 
@@ -23,34 +24,12 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # ============================================================
-# Data Directories
-# ============================================================
-
-MASTER_DATA_DIR = PROJECT_ROOT / "Master_Data"
-
-JD_DIR = PROJECT_ROOT / "JD"
-
-RESUME_DIR = PROJECT_ROOT / "Resume"
-
-OUTPUT_DIR = PROJECT_ROOT / "output"
-
-REPORT_DIR = PROJECT_ROOT / "reports"
-
-LOG_DIR = PROJECT_ROOT / "logs"
-
-TEMP_DIR = PROJECT_ROOT / "temp"
-
-# ============================================================
-# Master Data Files
-# ============================================================
-
-SKILLS_MASTER_FILE = MASTER_DATA_DIR / "skills_master.xlsx"
-
-# ============================================================
 # Application Directories
 # ============================================================
 
 CONFIG_DIR = PROJECT_ROOT / "config"
+
+DATABASE_DIR = PROJECT_ROOT / "database"
 
 MODELS_DIR = PROJECT_ROOT / "models"
 
@@ -58,110 +37,67 @@ PARSER_DIR = PROJECT_ROOT / "parser"
 
 SERVICES_DIR = PROJECT_ROOT / "services"
 
-UI_DIR = PROJECT_ROOT / "ui"
+UTILS_DIR = PROJECT_ROOT / "utils"
 
-TOOLS_DIR = PROJECT_ROOT / "tools"
+UI_DIR = PROJECT_ROOT / "ui"
 
 TESTS_DIR = PROJECT_ROOT / "tests"
 
+TOOLS_DIR = PROJECT_ROOT / "tools"
+
+DOCS_DIR = PROJECT_ROOT / "docs"
+
+MASTER_DATA_DIR = PROJECT_ROOT / "Master_Data"
+
+UPLOADS_DIR = PROJECT_ROOT / "uploads"
+
+OUTPUT_DIR = PROJECT_ROOT / "output"
+
+LOGS_DIR = PROJECT_ROOT / "logs"
+
+TEMP_DIR = PROJECT_ROOT / "temp"
+
 # ============================================================
-# List of Directories to Auto-Create
+# Master Configuration Workbook
+# ============================================================
+
+CONFIGURATION_WORKBOOK = (
+    MASTER_DATA_DIR /
+    "RecruitOS_Configuration.xlsx"
+)
+
+# ============================================================
+# Helper
 # ============================================================
 
 ALL_DIRECTORIES = [
 
+    DATABASE_DIR,
+
     MASTER_DATA_DIR,
-
-    JD_DIR,
-
-    RESUME_DIR,
 
     OUTPUT_DIR,
 
-    REPORT_DIR,
+    LOGS_DIR,
 
-    LOG_DIR,
+    TEMP_DIR,
 
-    TEMP_DIR
+    DOCS_DIR,
+
+    UPLOADS_DIR
 
 ]
 
 # ============================================================
-# Create Missing Directories
+# Create Directories
 # ============================================================
 
-def ensure_directories():
-    """
-    Create all required RecruitOS directories if they do not exist.
-    """
+for directory in ALL_DIRECTORIES:
 
-    for directory in ALL_DIRECTORIES:
+    directory.mkdir(
 
-        directory.mkdir(
-            parents=True,
-            exist_ok=True
-        )
+        parents=True,
 
-# ============================================================
-# Execute on Import
-# ============================================================
+        exist_ok=True
 
-ensure_directories()
-
-# ============================================================
-# Debug
-# ============================================================
-
-if __name__ == "__main__":
-
-    print("\n========== RecruitOS Paths ==========\n")
-
-    print("Project Root :", PROJECT_ROOT)
-
-    print("Master Data  :", MASTER_DATA_DIR)
-
-    print("Skills File  :", SKILLS_MASTER_FILE)
-
-    print("JD Folder    :", JD_DIR)
-
-    print("Resume Folder:", RESUME_DIR)
-
-    print("Output Folder:", OUTPUT_DIR)
-
-    print("Reports      :", REPORT_DIR)
-
-    print("Logs         :", LOG_DIR)
-
-    print("Temp         :", TEMP_DIR)
-
-    print("\nDirectories verified successfully.\n")
-
-# =====================================================
-# Master Data Files
-# =====================================================
-
-SKILLS_MASTER_FILE = MASTER_DATA_DIR / "skills_master.xlsx"
-
-CERTIFICATION_MASTER_FILE = (
-    MASTER_DATA_DIR / "certification_master.xlsx"
-)
-
-EDUCATION_MASTER_FILE = (
-    MASTER_DATA_DIR / "education_master.xlsx"
-)
-
-COMPANY_MASTER_FILE = (
-    MASTER_DATA_DIR / "company_master.xlsx"
-)
-
-LOCATION_MASTER_FILE = (
-    MASTER_DATA_DIR / "location_master.xlsx"
-)
-
-LANGUAGE_MASTER_FILE = (
-    MASTER_DATA_DIR / "language_master.xlsx"
-)
-
-DOMAIN_MASTER_FILE = (
-    MASTER_DATA_DIR / "domain_master.xlsx"
-)
+    )
