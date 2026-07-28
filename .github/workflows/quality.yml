@@ -1,0 +1,51 @@
+name: RecruitOS Quality Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Repository policy
+        run: python -m tools.repository_policy --tracked
+
+      - name: RecruitOS preflight
+        env:
+          RECRUITOS_ENVIRONMENT: development
+          RECRUITOS_ALLOW_INSECURE_LOCAL_BOOTSTRAP: "true"
+        run: python -m tools.preflight
+
+      - name: Unit and integration tests
+        env:
+          RECRUITOS_ENVIRONMENT: development
+          RECRUITOS_ALLOW_INSECURE_LOCAL_BOOTSTRAP: "true"
+        run: python -m unittest discover -s tests -p "test_*.py" -v
+
+      - name: Python compilation
+        run: |
+          python -m compileall -q \
+            app.py config database JD models parser reports \
+            services tests tools ui utils

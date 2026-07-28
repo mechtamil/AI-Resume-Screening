@@ -1,0 +1,35 @@
+# RecruitOS Engineering Backlog
+
+## P0 — Keep green
+
+- [ ] Keep the complete automated suite passing.
+- [ ] Keep public self-registration disabled.
+- [ ] Require SecurityContext and backend ownership filters for protected records.
+- [ ] Never export permanent passwords or password hashes.
+- [ ] Never commit CVs, uploads, runtime databases, logs, temporary files or generated reports.
+- [x] Rebaseline Git from a policy-validated clean source package.
+- [x] Add CI repository-policy, preflight, test and compilation gates.
+- [ ] Keep configuration scoring total at 100 and recommendation ranges continuous.
+
+## P1 — Required before global production
+
+- [x] Sprint 5.7.1B: isolate uploads, temporary files and exports by tenant/user/session.
+- [ ] Sprint 5.7.1C: tenant-specific configuration and cache isolation.
+- [ ] Sprint 5.7.1D: explicit Reader sharing and revocation.
+- [ ] Implement production email/identity-provider password reset.
+- [ ] Add MFA/enterprise SSO roadmap implementation.
+- [ ] Add production database, concurrency and observability.
+- [ ] Add privacy retention, audit viewer and data lifecycle controls.
+
+## P2 — Product quality
+
+- [ ] Advanced experience timeline extraction.
+- [ ] Stronger domain, role, company and location extraction.
+- [ ] Private analytics, search, filters and pagination.
+- [ ] Localization and time-zone presentation.
+
+## P3 — Integrations
+
+- [ ] Enterprise identity provider / Microsoft Entra ID.
+- [ ] ATS integration.
+- [ ] Controlled email/calendar workflows.

@@ -1,0 +1,97 @@
+# ============================================================
+# RecruitOS source-control policy
+# Track source, tests, documentation, approved static assets,
+# and the central configuration workbook only.
+# ============================================================
+
+# Python bytecode, caches, test output
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Virtual environments and local Python tooling
+.venv/
+venv/
+env/
+ENV/
+.python-version
+pip-wheel-metadata/
+
+# IDE, editor and operating-system files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+
+# Streamlit/runtime cache
+.streamlit/cache/
+
+# Runtime uploads and generated outputs
+uploads/*
+!uploads/.gitkeep
+output/*
+!output/.gitkeep
+temp/*
+!temp/.gitkeep
+logs/*
+!logs/.gitkeep
+
+# Local candidate/resume/JD data
+Resume/*
+!Resume/.gitkeep
+JD/*.pdf
+JD/*.docx
+
+# Runtime databases and backups
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.bak
+*.backup
+
+# Legacy separate master workbooks; central workbook is authoritative
+Master_Data/*_master.xlsx
+Master_Data/*backup*.xlsx
+Master_Data/*copy*.xlsx
+!Master_Data/RecruitOS_Configuration.xlsx
+
+# Generated source-release packages
+/dist/
+/releases/
+*.zip
+PACKAGE_MANIFEST_SHA256.txt
+SOURCE_MANIFEST_SHA256.txt
+README_APPLY.txt
+
+# Build/package output
+build/
+dist/
+*.egg-info/
+
+# Temporary diagnostics
+repository_policy_report.json
+preflight_report.json
