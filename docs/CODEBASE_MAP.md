@@ -1,4 +1,4 @@
-# RecruitOS Codebase Map — Version 0.7.1
+# RecruitOS Codebase Map — Version 0.7.5
 
 ## Entry and UI
 
@@ -9,10 +9,11 @@
 | `ui/admin_users.py` | User list, single provisioning, Excel import, credential/reset/role/status administration |
 | `ui/theme.py` | Central responsive CSS, motion, component styling and reduced-motion behavior |
 | `ui/brand_components.py` | ALTEN login visual, page heroes, sidebar and feature-card HTML |
-| `ui/home.py` | Role-aware premium home dashboard |
-| `ui/resume_screening.py` | Authorized screening workflow |
+| `ui/home.py` | Private activity metrics and direct operational actions |
+| `ui/resume_screening.py` | Multi-format intake, template downloads and authorized screening workflow |
 | `ui/results.py` | Ranked result view and Excel export |
-| `ui/candidate_database.py` | Private projects, sessions and candidates |
+| `ui/candidate_database.py` | Private projects, sessions, candidates and reopen navigation |
+| `ui/navigation.py` | Safe queued page transitions and guided workflow footer |
 
 ## Configuration
 
@@ -104,3 +105,18 @@ End-to-end proof that different tenant taxonomies produce isolated extraction re
 
 ### `tests/test_configuration_snapshot_persistence.py`
 Reopen-time configuration provenance contract.
+
+
+## Sprint 5.7.1C-R1 additions
+
+| File | Responsibility |
+|---|---|
+| `parser/image_reader.py` | OCR extraction for PNG/JPEG/WEBP/TIFF input |
+| `parser/spreadsheet_reader.py` | XLSX/XLS/CSV normalization into parser-ready text |
+| `services/input_template_service.py` | In-memory JD and supplemental-skill Excel templates |
+| `services/skill_list_service.py` | Mandatory/Preferred supplemental requirement parsing |
+| `ui/navigation.py` | Authorized queued navigation and workflow neighbors |
+| `tests/test_document_manager_multiformat.py` | Spreadsheet/image normalization contract |
+| `tests/test_input_template_service.py` | Excel template structure and validation contract |
+| `tests/test_skill_list_service_formats.py` | Mandatory/Preferred list behavior |
+| `tests/test_guided_ui_contract.py` | Home/sidebar/template/next-action UI source contract |

@@ -63,10 +63,14 @@ class ProcessingService:
             job = JDParser.parse(jd_document)
 
             if skill_list_path:
-                supplemental = SkillListService.read_skills(skill_list_path)
+                supplemental = SkillListService.read_requirements(skill_list_path)
                 job.mandatory_skills = cls._merge_skills(
                     job.mandatory_skills,
-                    supplemental,
+                    supplemental["mandatory"],
+                )
+                job.preferred_skills = cls._merge_skills(
+                    job.preferred_skills,
+                    supplemental["preferred"],
                 )
 
             candidates = []

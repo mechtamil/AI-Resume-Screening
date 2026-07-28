@@ -1,5 +1,28 @@
 # RecruitOS Changelog
 
+## 0.7.5 — Sprint 5.7.1C-R1 Universal Intake Templates & Guided Workspace UX
+
+### Added
+- Multi-format JD, supplemental-skill and resume intake for PDF, DOCX, TXT, XLSX, XLS, CSV and common image formats.
+- OCR image reader and scanned-PDF page fallback using Tesseract.
+- Spreadsheet normalization for field/value and generic tabular recruitment data.
+- Downloadable Job Description and Supplemental Skill List Excel templates.
+- Mandatory/Preferred classification in supplemental skill-list spreadsheets.
+- Guided operational navigation across Home, Resume Screening, Results and Candidate Database.
+- Action-oriented home dashboard using private project/session/candidate/shortlist counts.
+- Compact non-duplicated sidebar identity card, dark mode and bottom sign-out placement.
+- New multi-format, template, navigation and UI contract tests.
+
+### Changed
+- Application version increased to `0.7.5`.
+- Empty text extraction now fails clearly rather than creating empty screening records.
+- Resume Screening now shows accepted formats, input readiness and a direct Results action.
+- Home is an operational launchpad rather than a static feature-only page.
+
+### Deployment
+- Added `packages.txt` for the Tesseract Linux runtime.
+- Added Pillow, pytesseract and xlrd dependencies.
+
 ## 0.7.4 — Sprint 5.7.1C Tenant-Specific Configuration & AI-Ready Taxonomy Foundation
 
 ### Added

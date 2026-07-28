@@ -5,10 +5,10 @@
 - **Product:** RecruitOS — AI Resume Screening & Recruitment Platform
 - **Organization:** ALTEN
 - **Owner:** Tamilvanan A
-- **Current version:** `0.7.4`
-- **Current milestone:** `5.7.1C — Tenant-Specific Configuration & AI-Ready Taxonomy Foundation`
+- **Current version:** `0.7.5`
+- **Current milestone:** `5.7.1C-R1 — Universal Intake Templates & Guided Workspace UX`
 - **Database schema:** `5`
-- **Technology:** Python, Streamlit, pandas, SQLite, openpyxl, PyMuPDF and python-docx
+- **Technology:** Python, Streamlit, pandas, SQLite, openpyxl, PyMuPDF, python-docx, Pillow and Tesseract OCR
 - **Status:** Active development. Identity, RBAC, private data/files, clean deployment guardrails and tenant-specific configuration versioning are implemented.
 
 ## 2. Product objective
@@ -29,9 +29,9 @@ Conflicts must be corrected in the same sprint that introduces them.
 
 ## 4. Screening workflow
 
-1. Authenticated User uploads one JD.
-2. User may upload a supplemental Skill List.
-3. User uploads one or more resumes.
+1. Authenticated User uploads one JD in a supported text, spreadsheet, PDF or image format, or completes the RecruitOS JD Excel template.
+2. User may upload a supplemental Skill List in a supported format or use the RecruitOS skill-list template with Mandatory/Preferred classification.
+3. User uploads one or more resumes in supported text, spreadsheet, PDF or image formats.
 4. Uploads are validated and safely stored.
 5. `DocumentManager` and `ExtractionService` extract text.
 6. `JDParser` and `ResumeParser` create domain models.
@@ -42,6 +42,18 @@ Conflicts must be corrected in the same sprint that introduces them.
 11. Candidates are ranked.
 12. The private project/session/candidates/results are persisted.
 13. Results and Excel exports are shown only to the authorized owner.
+
+## 4.1 Universal intake contract
+
+RecruitOS supports these common recruitment-document extensions:
+
+- Text/documents: `PDF`, `DOCX`, `TXT`
+- Spreadsheets: `XLSX`, `XLS`, `CSV`
+- Images/OCR: `PNG`, `JPG`, `JPEG`, `WEBP`, `TIF`, `TIFF`
+
+"Any format" means the listed common recruiter formats; unsupported proprietary or encrypted formats must be converted before upload. Scanned PDFs and images use OCR. Empty or unreadable extraction is rejected rather than silently producing an empty candidate.
+
+The JD and supplemental-skill Excel templates are generated in memory by RecruitOS. Structured templates improve extraction completeness and evidence accuracy; they must not artificially change the configured scoring formula.
 
 ## 5. Identity and login contract
 
@@ -134,6 +146,12 @@ RecruitOS must be visually differentiated, responsive and accessible rather than
 - Animations must be lightweight and respect `prefers-reduced-motion`.
 - The ALTEN logo must not be recolored, deformed, cropped, rotated or decorated.
 - Approved local logo assets take priority; official media-library URLs are the fallback.
+- A compact sidebar identity card must show each account detail once; Country/Location is hidden when it duplicates User ID.
+- Sign Out is placed in the sidebar footer.
+- Users can switch between light and dark workspace themes.
+- Operational pages are linked through a guided workflow: Home → Resume Screening → Results → Candidate Database.
+- Home must show real private-workspace counts and direct action buttons, not only decorative marketing cards.
+
 
 ## 10. Configuration architecture
 

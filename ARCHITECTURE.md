@@ -7,7 +7,7 @@ Browser / Streamlit
         |
         v
 Premium ALTEN UI
-app.py + ui/* + ui/theme.py + ui/brand_components.py
+app.py + ui/* + ui/theme.py + ui/brand_components.py + ui/navigation.py
         |
         +---------------- Authentication ----------------+
         |                                                |
@@ -23,7 +23,7 @@ SecurityContext(user_id, tenant_id, role, owner scope) --+
 UploadService / ProcessingService                  PersistenceService
         |                                                |
         v                                                v
-DocumentManager / Parsers / Matchers          Project/Session/Candidate repos
+DocumentManager / OCR / Spreadsheet Reader / Parsers / Matchers          Project/Session/Candidate repos
         |                                                |
         v                                                v
 ConfigurationContext / TenantConfigurationService  Private SQLite records
@@ -232,3 +232,24 @@ Fresh repository / Streamlit deployment
 
 The clean release builder never packages ignored working-tree content. A clean Git status is required for normal CLI release builds.
 
+
+
+## 13. Universal intake and guided UX boundary
+
+```text
+PDF / DOCX / TXT / XLSX / XLS / CSV / IMAGE
+                    |
+                    v
+DocumentManager reader registry
+  +--> PyMuPDF text extraction
+  +--> scanned-page OCR fallback
+  +--> Pillow + Tesseract image OCR
+  +--> pandas spreadsheet normalization
+                    |
+                    v
+ExtractionService -> JDParser / ResumeParser
+```
+
+`InputTemplateService` creates the JD and supplemental-skill Excel templates in memory. `SkillListService` preserves Mandatory and Preferred classification. `ui/navigation.py` queues authorized page transitions before the sidebar radio widget is rendered, avoiding unsafe same-run widget-state mutation.
+
+The sidebar contains one identity card, appearance control and a bottom sign-out action. Theme selection is browser-session-local and does not alter tenant business configuration.

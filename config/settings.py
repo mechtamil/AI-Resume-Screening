@@ -77,9 +77,21 @@ if DEPLOYMENT_ENVIRONMENT not in {"development", "test", "production"}:
 
 VERSION = _read_version()
 
-SUPPORTED_RESUME_TYPES = (".pdf", ".docx", ".txt")
-SUPPORTED_JD_TYPES = (".pdf", ".docx", ".txt")
-SUPPORTED_SKILL_TYPES = (".xlsx", ".csv", ".txt")
+DOCUMENT_TEXT_TYPES = (".pdf", ".docx", ".txt")
+DOCUMENT_SPREADSHEET_TYPES = (".xlsx", ".xls", ".csv")
+DOCUMENT_IMAGE_TYPES = (".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff")
+
+# RecruitOS accepts common recruitment-document formats across all three input
+# groups. Image and scanned-PDF text is extracted through the OCR adapter.
+SUPPORTED_RESUME_TYPES = tuple(
+    dict.fromkeys(DOCUMENT_TEXT_TYPES + DOCUMENT_SPREADSHEET_TYPES + DOCUMENT_IMAGE_TYPES)
+)
+SUPPORTED_JD_TYPES = tuple(
+    dict.fromkeys(DOCUMENT_TEXT_TYPES + DOCUMENT_SPREADSHEET_TYPES + DOCUMENT_IMAGE_TYPES)
+)
+SUPPORTED_SKILL_TYPES = tuple(
+    dict.fromkeys(DOCUMENT_SPREADSHEET_TYPES + DOCUMENT_TEXT_TYPES + DOCUMENT_IMAGE_TYPES)
+)
 SUPPORTED_EXTENSIONS = tuple(
     sorted(set(SUPPORTED_RESUME_TYPES + SUPPORTED_JD_TYPES + SUPPORTED_SKILL_TYPES))
 )

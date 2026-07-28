@@ -21,12 +21,27 @@ from config.brand import (
 )
 
 
-def build_theme_css() -> str:
-    """Return the complete RecruitOS visual theme.
-
-    Animations are intentionally CSS-only, GPU-friendly, and disabled when a
-    user has enabled reduced-motion accessibility preferences.
-    """
+def build_theme_css(mode: str = "light") -> str:
+    """Return the complete RecruitOS light or dark visual theme."""
+    normalized = str(mode or "light").strip().casefold()
+    dark = normalized == "dark"
+    app_background = (
+        "radial-gradient(circle at 8% 4%, rgba(0,139,210,.18), transparent 28%), "
+        "radial-gradient(circle at 90% 10%, rgba(126,203,238,.12), transparent 25%), "
+        "linear-gradient(145deg, #071726 0%, #0b2338 48%, #071b2c 100%)"
+        if dark
+        else
+        "radial-gradient(circle at 8% 4%, rgba(126,203,238,.30), transparent 28%), "
+        "radial-gradient(circle at 90% 10%, rgba(0,139,210,.20), transparent 25%), "
+        "linear-gradient(145deg, #f9fcff 0%, #eef6fc 48%, #f7f9fc 100%)"
+    )
+    panel = "rgba(13,38,59,.90)" if dark else "rgba(255,255,255,.86)"
+    panel_strong = "rgba(18,48,72,.98)" if dark else "rgba(255,255,255,.96)"
+    line = "rgba(126,203,238,.18)" if dark else "rgba(4,57,98,.12)"
+    text = "#eaf6ff" if dark else ALTEN_NAVY
+    muted = "#aac2d4" if dark else "#526578"
+    field = "rgba(10,31,49,.96)" if dark else "rgba(255,255,255,.92)"
+    header = "rgba(7,23,38,.80)" if dark else "rgba(255,255,255,.58)"
     return f"""
 <style>
 :root {{
@@ -46,10 +61,13 @@ def build_theme_css() -> str:
   --alten-silver: {ALTEN_SILVER};
   --alten-pale-grey: {ALTEN_PALE_GREY};
   --alten-white: {ALTEN_WHITE};
-  --ros-bg: #f4f8fc;
-  --ros-panel: rgba(255,255,255,.86);
-  --ros-panel-strong: rgba(255,255,255,.96);
-  --ros-line: rgba(4,57,98,.12);
+  --ros-bg: {"#071726" if dark else "#f4f8fc"};
+  --ros-panel: {panel};
+  --ros-panel-strong: {panel_strong};
+  --ros-line: {line};
+  --ros-text: {text};
+  --ros-muted: {muted};
+  --ros-field: {field};
   --ros-shadow: 0 24px 64px rgba(4,57,98,.14);
   --ros-shadow-hover: 0 30px 78px rgba(4,57,98,.22);
   --ros-radius-xl: 28px;
@@ -62,15 +80,12 @@ html, body, [class*="css"] {{
 }}
 
 .stApp {{
-  background:
-    radial-gradient(circle at 8% 4%, rgba(126,203,238,.30), transparent 28%),
-    radial-gradient(circle at 90% 10%, rgba(0,139,210,.20), transparent 25%),
-    linear-gradient(145deg, #f9fcff 0%, #eef6fc 48%, #f7f9fc 100%);
-  color: var(--alten-navy);
+  background: {app_background};
+  color: var(--ros-text);
 }}
 
 [data-testid="stHeader"] {{
-  background: rgba(255,255,255,.58);
+  background: {header};
   backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(4,57,98,.08);
 }}
@@ -215,15 +230,16 @@ html, body, [class*="css"] {{
   left: 0; top: 0; bottom: 0; width: 4px;
   background: linear-gradient(var(--alten-blue), var(--alten-light-blue));
 }}
-[data-testid="stMetricValue"] {{ color: var(--alten-navy); font-weight: 800; }}
-[data-testid="stMetricLabel"] {{ color: var(--alten-dark-grey); font-weight: 650; }}
+[data-testid="stMetricValue"] {{ color: var(--ros-text); font-weight: 800; }}
+[data-testid="stMetricLabel"] {{ color: var(--ros-muted); font-weight: 650; }}
 
 /* Streamlit controls */
 .stTextInput input, .stTextArea textarea, .stNumberInput input,
 .stDateInput input, [data-baseweb="select"] > div {{
   border-radius: var(--ros-radius-md) !important;
   border: 1px solid rgba(4,57,98,.18) !important;
-  background: rgba(255,255,255,.92) !important;
+  background: var(--ros-field) !important;
+  color: var(--ros-text) !important;
   min-height: 48px;
   box-shadow: 0 8px 20px rgba(4,57,98,.05);
   transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
@@ -292,8 +308,8 @@ html, body, [class*="css"] {{
   font-weight: 700;
 }}
 .stTabs [aria-selected="true"] {{
-  background: white !important;
-  color: var(--alten-navy) !important;
+  background: var(--ros-panel-strong) !important;
+  color: var(--ros-text) !important;
   box-shadow: 0 8px 22px rgba(4,57,98,.10);
 }}
 
@@ -308,7 +324,7 @@ html, body, [class*="css"] {{
 [data-testid="stExpander"] {{
   border-radius: 16px !important;
   border: 1px solid rgba(4,57,98,.10) !important;
-  background: rgba(255,255,255,.72);
+  background: var(--ros-panel);
 }}
 
 /* Sidebar */
@@ -346,6 +362,87 @@ html, body, [class*="css"] {{
   letter-spacing: -.04em;
 }}
 .ros-sidebar-caption {{ color: rgba(255,255,255,.58); font-size: .78rem; }}
+
+
+/* Compact identity, navigation and bottom actions */
+.ros-sidebar-user {{
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .8rem;
+  border-radius: 16px;
+  background: rgba(255,255,255,.075);
+  border: 1px solid rgba(255,255,255,.12);
+  margin: .2rem 0 .65rem;
+}}
+.ros-user-avatar {{
+  width: 42px; height: 42px; flex: 0 0 42px;
+  display: grid; place-items: center;
+  border-radius: 14px;
+  font-weight: 850;
+  color: white;
+  background: linear-gradient(135deg, var(--alten-blue), var(--alten-light-blue));
+  box-shadow: 0 10px 24px rgba(0,139,210,.28);
+}}
+.ros-user-copy {{ min-width: 0; }}
+.ros-user-copy strong {{ display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }}
+.ros-user-copy span, .ros-user-location {{ color: rgba(255,255,255,.62) !important; font-size:.76rem; }}
+[data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child {{ display:none !important; }}
+[data-testid="stSidebar"] [data-testid="stRadio"] label {{
+  border: 1px solid transparent;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:hover {{
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.10);
+  transform: translateX(3px);
+}}
+[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] > div {{
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 2rem);
+}}
+.st-key-dark_mode {{ margin-top: auto; }}
+.st-key-sidebar_sign_out {{
+  position: sticky;
+  bottom: 1rem;
+  width: 100%;
+  z-index: 1000;
+  padding-top: .35rem;
+}}
+
+/* Guided workflow */
+.ros-stepper {{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:.7rem;
+  margin:0 0 1.6rem;
+}}
+.ros-step {{
+  display:flex;
+  align-items:center;
+  gap:.7rem;
+  padding:.8rem 1rem;
+  border-radius:16px;
+  background:var(--ros-panel);
+  border:1px solid var(--ros-line);
+  box-shadow:0 12px 26px rgba(4,57,98,.07);
+}}
+.ros-step span {{
+  display:grid; place-items:center;
+  width:34px; height:34px; border-radius:12px;
+  color:var(--ros-muted); background:rgba(0,139,210,.08); font-weight:850;
+}}
+.ros-step strong {{ color:var(--ros-muted); font-size:.88rem; }}
+.ros-step.active {{ border-color:rgba(0,139,210,.48); transform:translateY(-2px); }}
+.ros-step.active span {{ color:white; background:linear-gradient(135deg,var(--alten-navy),var(--alten-blue)); }}
+.ros-step.active strong, .ros-step.complete strong {{ color:var(--ros-text); }}
+.ros-step.complete span {{ color:var(--alten-navy); background:var(--alten-light-blue); }}
+.ros-flow-divider {{ height:1px; margin:2.3rem 0 1rem; background:linear-gradient(90deg,transparent,var(--ros-line),transparent); }}
+
+.stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp p, .stApp label,
+.stApp [data-testid="stMarkdownContainer"] {{ color: var(--ros-text); }}
+.stApp .stCaption, .stApp [data-testid="stCaptionContainer"] {{ color: var(--ros-muted) !important; }}
 
 /* Login visual */
 .ros-login-shell {{
@@ -455,7 +552,7 @@ html, body, [class*="css"] {{
   padding: 1.25rem;
   min-height: 150px;
   border-radius: 20px;
-  background: rgba(255,255,255,.78);
+  background: var(--ros-panel);
   border: 1px solid rgba(4,57,98,.10);
   box-shadow: 0 18px 44px rgba(4,57,98,.09);
   backdrop-filter: blur(16px);
@@ -465,8 +562,8 @@ html, body, [class*="css"] {{
 .ros-feature:nth-child(2) {{ animation-delay: .08s; }}
 .ros-feature:nth-child(3) {{ animation-delay: .16s; }}
 .ros-feature:hover {{ transform: translateY(-6px); box-shadow: var(--ros-shadow-hover); }}
-.ros-feature strong {{ display:block; color: var(--alten-navy); font-size: 1.05rem; margin-bottom: .5rem; }}
-.ros-feature p {{ margin:0; color: #526578; font-size: .9rem; line-height:1.55; }}
+.ros-feature strong {{ display:block; color: var(--ros-text); font-size: 1.05rem; margin-bottom: .5rem; }}
+.ros-feature p {{ margin:0; color: var(--ros-muted); font-size: .9rem; line-height:1.55; }}
 .ros-feature .num {{
   position: absolute; right: 1rem; top: .7rem;
   font-size: 2.6rem; font-weight: 900; color: rgba(0,139,210,.10);
@@ -498,12 +595,14 @@ html, body, [class*="css"] {{
 }}
 
 @media (max-width: 900px) {{
+  .ros-stepper {{ grid-template-columns: repeat(2,minmax(0,1fr)); }}
   .block-container {{ padding-left: 1rem; padding-right: 1rem; }}
   .ros-feature-grid {{ grid-template-columns: 1fr; }}
   .ros-login-shell {{ min-height: 430px; }}
 }}
 
 @media (max-width: 760px) {{
+  .ros-stepper {{ grid-template-columns: 1fr; }}
   .ros-page-hero {{ border-radius: 22px; padding: 24px 20px; }}
   .ros-login-shell {{ border-radius: 24px; padding: 30px 24px; min-height: 390px; }}
   .ros-login-title {{ font-size: clamp(3rem, 18vw, 5rem); }}
@@ -523,11 +622,11 @@ html, body, [class*="css"] {{
 """
 
 
-def apply_alten_theme() -> None:
-    """Inject the global theme into the current Streamlit page."""
+def apply_alten_theme(mode: str = "light") -> None:
+    """Inject the selected global theme into the current Streamlit page."""
     import streamlit as st
 
-    st.markdown(build_theme_css(), unsafe_allow_html=True)
+    st.markdown(build_theme_css(mode), unsafe_allow_html=True)
     st.markdown(
         """
         <div class="ros-ambient" aria-hidden="true">

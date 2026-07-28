@@ -10,7 +10,7 @@ from config.settings import (
 )
 from models.security_context import SecurityContext
 from services.auth_service import AuthService
-from ui.brand_components import login_visual_html, page_header_html
+from ui.brand_components import login_visual_html, page_header_html, sidebar_user_card_html
 
 AUTH_TOKEN_KEY = "auth_token"
 AUTH_CONTEXT_KEY = "security_context"
@@ -182,12 +182,32 @@ def show_forced_password_change(context: SecurityContext) -> None:
 
 
 def show_authenticated_user(context: SecurityContext) -> None:
-    """Display the signed-in employee and logout action in the sidebar."""
-    st.sidebar.markdown(f"**{context.display_name}**")
-    st.sidebar.caption(f"{context.login_id} · {context.role.replace('_', ' ').title()}")
-    if context.country_location:
-        st.sidebar.caption(context.country_location)
-    if st.sidebar.button("Sign Out", use_container_width=True):
+    """Display one compact identity card without repeated account details."""
+    role_label = context.role.replace("_", " ").title()
+    st.sidebar.markdown(
+        sidebar_user_card_html(
+            display_name=context.display_name,
+            login_id=context.login_id,
+            role=role_label,
+            location=context.country_location,
+        ),
+        unsafe_allow_html=True,
+    )
+
+
+def show_sidebar_footer() -> None:
+    """Render appearance control and a bottom-anchored secure sign-out action."""
+    st.sidebar.markdown('<div class="ros-sidebar-footer-marker"></div>', unsafe_allow_html=True)
+    st.sidebar.toggle(
+        "Dark mode",
+        key="dark_mode",
+        help="Switch between RecruitOS light and dark workspace themes.",
+    )
+    if st.sidebar.button(
+        "Sign Out",
+        key="sidebar_sign_out",
+        use_container_width=True,
+    ):
         raw_token = str(st.session_state.get(AUTH_TOKEN_KEY) or "")
         try:
             AuthService.logout(raw_token)

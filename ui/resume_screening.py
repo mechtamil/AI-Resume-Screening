@@ -1,31 +1,74 @@
-"""Streamlit workflow for private end-to-end resume screening."""
+"""Streamlit workflow for private multi-format resume screening."""
 from __future__ import annotations
 
 import streamlit as st
 
-from config.settings import MAX_RESUMES_PER_SCREENING
+from config.settings import (
+    MAX_RESUMES_PER_SCREENING,
+    SUPPORTED_JD_TYPES,
+    SUPPORTED_RESUME_TYPES,
+    SUPPORTED_SKILL_TYPES,
+)
 from models.security_context import SecurityContext
 from services.authorization_service import PERMISSION_SCREEN, AuthorizationService
+from services.input_template_service import InputTemplateService
 from services.persistence_service import PersistenceService
 from services.processing_service import ProcessingService
 from services.upload_service import UploadService
-from ui.brand_components import page_header_html
+from ui.brand_components import page_header_html, workflow_stepper_html
+from ui.navigation import queue_page
+
+
+def _uploader_types(values: tuple[str, ...]) -> list[str]:
+    return [value.lstrip(".") for value in values]
+
+
+def _format_caption(values: tuple[str, ...]) -> str:
+    return ", ".join(value.lstrip(".").upper() for value in values)
 
 
 def show_resume_screening(context: SecurityContext) -> None:
+    """Collect structured project inputs and execute one private screening session."""
     context.require_valid()
     AuthorizationService.require_permission(context, PERMISSION_SCREEN)
+
     st.markdown(
         page_header_html(
             title="Screen candidates",
-            eyebrow="Private AI-assisted workflow",
+            eyebrow="Guided private workflow",
             description=(
-                "Every JD, resume, skill list and report is stored inside your "
-                "tenant- and user-isolated screening workspace."
+                "Use free-form documents or RecruitOS Excel templates. Common text, "
+                "spreadsheet and image formats are normalized into one auditable pipeline."
             ),
         ),
         unsafe_allow_html=True,
     )
+    st.markdown(workflow_stepper_html(active_step=2), unsafe_allow_html=True)
+
+    with st.expander("Start with RecruitOS templates for best extraction quality", expanded=True):
+        st.write(
+            "Templates do not artificially increase a candidate score. They improve input "
+            "completeness and reduce ambiguity, which produces more reliable matching evidence."
+        )
+        template1, template2 = st.columns(2)
+        with template1:
+            st.download_button(
+                "Download Job Description Excel Template",
+                data=InputTemplateService.build_job_description_template(),
+                file_name="RecruitOS_Job_Description_Template.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key="download_jd_template",
+                use_container_width=True,
+            )
+        with template2:
+            st.download_button(
+                "Download Supplemental Skill List Template",
+                data=InputTemplateService.build_skill_list_template(),
+                file_name="RecruitOS_Supplemental_Skill_List_Template.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key="download_skill_template",
+                use_container_width=True,
+            )
 
     st.subheader("Project intelligence")
     col1, col2 = st.columns(2)
@@ -44,30 +87,39 @@ def show_resume_screening(context: SecurityContext) -> None:
         project_status = st.selectbox("Project Status", ["Open", "On Hold", "Closed"])
 
     st.subheader("01 · Job description")
+    st.caption(
+        "Accepted formats: " + _format_caption(SUPPORTED_JD_TYPES) + ". "
+        "Scanned PDFs and images are processed through OCR."
+    )
     uploaded_jd = st.file_uploader(
         "Upload Job Description",
-        type=["pdf", "docx", "txt"],
+        type=_uploader_types(SUPPORTED_JD_TYPES),
         key="jd_upload",
+        help="Use the Excel template when the JD has clearly separated requirements.",
     )
 
     st.subheader("02 · Supplemental skill list")
+    st.caption("Accepted formats: " + _format_caption(SUPPORTED_SKILL_TYPES))
     uploaded_skill = st.file_uploader(
         "Upload an optional supplemental skill list",
-        type=["xlsx", "csv", "txt"],
+        type=_uploader_types(SUPPORTED_SKILL_TYPES),
         key="skill_upload",
         help=(
-            "Configured skills are added to the JD mandatory-skill requirements; "
+            "Mandatory and preferred skills are merged into the corresponding JD sections; "
             "they do not replace the JD."
         ),
     )
 
     st.subheader("03 · Candidate resumes")
+    st.caption(
+        "Accepted formats: " + _format_caption(SUPPORTED_RESUME_TYPES) + ". "
+        f"Maximum {MAX_RESUMES_PER_SCREENING} resumes per session."
+    )
     uploaded_resumes = st.file_uploader(
         "Upload one or more resumes",
-        type=["pdf", "docx", "txt"],
+        type=_uploader_types(SUPPORTED_RESUME_TYPES),
         accept_multiple_files=True,
         key="resume_uploads",
-        help=f"Maximum {MAX_RESUMES_PER_SCREENING} resumes per screening session.",
     )
 
     resume_count = len(uploaded_resumes or [])
@@ -76,6 +128,12 @@ def show_resume_screening(context: SecurityContext) -> None:
             f"This screening contains {resume_count} resumes. The configured maximum is "
             f"{MAX_RESUMES_PER_SCREENING}."
         )
+
+    st.subheader("04 · Review and run")
+    input1, input2, input3 = st.columns(3)
+    input1.metric("Job description", "Ready" if uploaded_jd else "Required")
+    input2.metric("Skill list", "Included" if uploaded_skill else "Optional")
+    input3.metric("Candidate resumes", resume_count)
 
     can_analyze = (
         uploaded_jd is not None
@@ -93,7 +151,7 @@ def show_resume_screening(context: SecurityContext) -> None:
         persisted = False
         try:
             with st.spinner(
-                "Creating your private workspace, screening candidates and saving the ranked session..."
+                "Normalizing files, extracting evidence, matching candidates and saving the private session..."
             ):
                 jd_asset = UploadService.save_job_description(context, scope, uploaded_jd)
                 resume_assets = UploadService.save_multiple_resumes(
@@ -131,19 +189,27 @@ def show_resume_screening(context: SecurityContext) -> None:
 
                 persistence = PersistenceService.save_analysis_result(context, result)
                 persisted = True
+                result["persistence"] = dict(persistence)
                 st.session_state["analysis_result"] = result
 
             summary = result["summary"]
             st.success(
-                f"Analysis complete and privately saved as Session "
-                f"{persistence['session_id']}: "
-                f"{summary['resumes_processed']} processed, "
-                f"{summary['resumes_failed']} failed. Open Results from navigation."
+                f"Session {persistence['session_id']} saved: "
+                f"{summary['resumes_processed']} processed and "
+                f"{summary['resumes_failed']} failed."
             )
             if result["errors"]:
                 with st.expander("Files that could not be processed"):
                     for error in result["errors"]:
                         st.error(f"{error['file']}: {error['error']}")
+
+            if st.button(
+                "View Ranked Results →",
+                key="screening_view_results",
+                type="primary",
+                use_container_width=True,
+            ):
+                queue_page("Results")
         except Exception as exc:
             if not persisted:
                 UploadService.delete_workspace(context, scope)

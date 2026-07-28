@@ -97,6 +97,49 @@ def feature_grid_html() -> str:
     """
 
 
+def sidebar_user_card_html(
+    *,
+    display_name: str,
+    login_id: str,
+    role: str,
+    location: str = "",
+) -> str:
+    """Build a compact, non-duplicated signed-in user card."""
+    normalized_location = str(location or "").strip()
+    if normalized_location.casefold() == str(login_id or "").strip().casefold():
+        normalized_location = ""
+    location_html = (
+        f'<div class="ros-user-location">{html.escape(normalized_location)}</div>'
+        if normalized_location
+        else ""
+    )
+    initials = "".join(
+        part[:1].upper() for part in str(display_name or "User").split()[:2]
+    ) or "U"
+    return f"""
+    <section class="ros-sidebar-user" aria-label="Signed-in user">
+      <div class="ros-user-avatar">{html.escape(initials)}</div>
+      <div class="ros-user-copy">
+        <strong>{html.escape(display_name or 'User')}</strong>
+        <span>{html.escape(login_id)} · {html.escape(role)}</span>
+        {location_html}
+      </div>
+    </section>
+    """
+
+
+def workflow_stepper_html(*, active_step: int = 1) -> str:
+    """Return a four-stage visual screening workflow indicator."""
+    labels = ("Prepare", "Screen", "Review", "Export")
+    items = []
+    for index, label in enumerate(labels, start=1):
+        state = "active" if index == active_step else "complete" if index < active_step else "pending"
+        items.append(
+            f'<div class="ros-step {state}"><span>{index:02d}</span><strong>{label}</strong></div>'
+        )
+    return '<div class="ros-stepper">' + ''.join(items) + '</div>'
+
+
 def _path_to_data_uri(path: Path) -> str:
     suffix = path.suffix.casefold()
     media_type = {

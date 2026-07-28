@@ -4,21 +4,24 @@ RecruitOS is ALTEN's configuration-driven AI Resume Screening and Recruitment Pl
 
 ## Current version
 
-`0.7.4` — Sprint `5.7.1C: Tenant-Specific Configuration & AI-Ready Taxonomy Foundation`
+`0.7.5` — Sprint `5.7.1C-R1: Universal Intake Templates & Guided Workspace UX`
 
 ## Current capabilities
 
-- premium responsive ALTEN-aligned Streamlit experience
+- premium responsive ALTEN-aligned Streamlit experience with light/dark workspace modes
 - admin-provisioned User ID/password authentication
 - five-role RBAC model
 - mandatory first-login password reset
 - single-user and Excel bulk user creation
 - private project/session/candidate/result persistence
 - system-default plus immutable tenant-specific configuration versions
+- multi-format JD/resume/skill intake across PDF, DOCX, TXT, XLSX, XLS, CSV and common image formats
+- downloadable structured Excel templates for job descriptions and supplemental skills
 - resume/JD parsing, matching, scoring, recommendations and ranking
 - ranked Excel screening export
 - tenant/user/workspace-isolated uploads, temporary files and reports
 - configuration snapshot provenance for every screening
+- guided page-to-page workflow navigation and action-oriented home dashboard
 - repository policy, clean source-release builder and CI quality gate
 
 ## Setup
@@ -27,6 +30,7 @@ RecruitOS is ALTEN's configuration-driven AI Resume Screening and Recruitment Pl
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
+# Install the packages listed in packages.txt on Linux/Streamlit Cloud for OCR
 python -m tools.preflight
 python -m unittest discover -s tests -p "test_*.py" -v
 streamlit run app.py
@@ -65,6 +69,7 @@ The system default is `Master_Data/RecruitOS_Configuration.xlsx`. Authorized adm
 - `docs/SPRINT_5.7.1B_SECURE_FILE_EXPORT_ISOLATION.md`
 - `docs/SPRINT_5.7.1B_R1_REPOSITORY_REBASELINE.md`
 - `docs/SPRINT_5.7.1C_TENANT_CONFIGURATION.md`
+- `docs/SPRINT_5.7.1C_R1_UNIVERSAL_INTAKE_GUIDED_UX.md`
 - `docs/AI_REFERENCE_ADOPTION.md`
 
 ## Repository and release gate

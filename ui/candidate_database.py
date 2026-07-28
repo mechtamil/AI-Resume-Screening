@@ -7,6 +7,7 @@ import streamlit as st
 from models.security_context import SecurityContext
 from services.persistence_service import PersistenceService
 from ui.brand_components import page_header_html
+from ui.navigation import queue_page
 
 
 def show_candidate_database(context: SecurityContext) -> None:
@@ -31,6 +32,8 @@ def show_candidate_database(context: SecurityContext) -> None:
 
     if not projects:
         st.info("No screening project has been saved in your workspace yet.")
+        if st.button("Start Resume Screening →", type="primary", use_container_width=True):
+            queue_page("Resume Screening")
         return
 
     project_rows = [
@@ -138,8 +141,7 @@ def show_candidate_database(context: SecurityContext) -> None:
                     context,
                     session_id,
                 )
-                st.session_state["page"] = "Results"
-                st.rerun()
+                queue_page("Results")
             except Exception as exc:
                 st.exception(exc)
 

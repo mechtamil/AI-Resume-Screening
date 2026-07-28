@@ -9,7 +9,8 @@ from models.storage_asset import StorageScope
 from services.authorization_service import PERMISSION_RESULTS, AuthorizationService
 from services.secure_export_service import SecureExportService
 from services.secure_storage_service import SecureStorageService
-from ui.brand_components import page_header_html
+from ui.brand_components import page_header_html, workflow_stepper_html
+from ui.navigation import queue_page
 
 
 def show(context: SecurityContext) -> None:
@@ -26,10 +27,13 @@ def show(context: SecurityContext) -> None:
         ),
         unsafe_allow_html=True,
     )
+    st.markdown(workflow_stepper_html(active_step=3), unsafe_allow_html=True)
 
     result = st.session_state.get("analysis_result")
     if not result:
         st.warning("No analysis is available. Run Resume Screening first or reopen a saved session.")
+        if st.button("Start Resume Screening →", type="primary", use_container_width=True):
+            queue_page("Resume Screening")
         return
 
     jd = result["job_description"]
@@ -64,6 +68,7 @@ def show(context: SecurityContext) -> None:
     rows = [item.summary() for item in matches]
     st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
+    st.markdown(workflow_stepper_html(active_step=4), unsafe_allow_html=True)
     st.subheader("Secure export")
     scope = _scope_from_result(context, result)
     cache_key = f"secure_excel_{context.tenant_id}_{context.user_id}_{scope.workspace_id}"

@@ -22,7 +22,7 @@ class VisualThemeTests(unittest.TestCase):
         self.assertEqual(brand.ALTEN_PALE_GREY, "#E6E6E9")
 
     def test_theme_has_motion_depth_responsiveness_and_accessibility(self):
-        css = build_theme_css()
+        css = build_theme_css("light")
         for marker in (
             "@keyframes ros-float",
             "@keyframes ros-shimmer",
@@ -32,6 +32,13 @@ class VisualThemeTests(unittest.TestCase):
             "prefers-reduced-motion: reduce",
         ):
             self.assertIn(marker, css)
+
+    def test_dark_theme_uses_private_workspace_palette(self):
+        css = build_theme_css("dark")
+        self.assertIn("#071726", css)
+        self.assertIn("--ros-text: #eaf6ff", css)
+        self.assertIn(".st-key-sidebar_sign_out", css)
+        self.assertIn(".ros-stepper", css)
 
     def test_brand_components_render_visual_story(self):
         visual = login_visual_html()

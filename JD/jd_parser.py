@@ -39,7 +39,7 @@ class JDParser:
 
     LABEL_PATTERNS = {
         "job_title": re.compile(r"(?im)^\s*(?:job\s*title|position|role)\s*[:\-]\s*(.+?)\s*$"),
-        "company_name": re.compile(r"(?im)^\s*(?:company|client|organization)\s*[:\-]\s*(.+?)\s*$"),
+        "company_name": re.compile(r"(?im)^\s*(?:company(?:\s+name)?|client|organization)\s*[:\-]\s*(.+?)\s*$"),
         "location": re.compile(r"(?im)^\s*(?:location|work location)\s*[:\-]\s*(.+?)\s*$"),
         "employment_type": re.compile(r"(?im)^\s*(?:employment type|job type)\s*[:\-]\s*(.+?)\s*$"),
     }

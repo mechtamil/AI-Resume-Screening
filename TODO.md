@@ -11,6 +11,14 @@
 - [x] Add CI repository-policy, preflight, test and compilation gates.
 - [ ] Keep configuration scoring total at 100 and recommendation ranges continuous.
 
+## Completed product-experience corrections
+
+- [x] Common text, spreadsheet, PDF and image/OCR input support.
+- [x] JD and supplemental-skill Excel templates.
+- [x] Mandatory/Preferred supplemental skill classification.
+- [x] Guided page-to-page workflow actions.
+- [x] Action-oriented home dashboard, dark mode, compact sidebar identity and bottom sign-out.
+
 ## P1 — Required before global production
 
 - [x] Sprint 5.7.1B: isolate uploads, temporary files and exports by tenant/user/session.

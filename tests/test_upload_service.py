@@ -76,6 +76,26 @@ class UploadServiceTests(unittest.TestCase):
             self.assertIn("user_10", stored.relative_path)
             self.assertIn(f"workspace_{scope.workspace_id}", stored.relative_path)
 
+    def test_common_image_and_spreadsheet_extensions_are_accepted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            UploadService.configure_storage(
+                SecureStorageService(
+                    uploads_root=root / "uploads",
+                    temp_root=root / "temp",
+                    output_root=root / "output",
+                )
+            )
+            scope = UploadService.create_workspace(self.context)
+            image = UploadService.save_resume(
+                self.context, scope, FakeUpload("candidate.png", b"image")
+            )
+            jd = UploadService.save_job_description(
+                self.context, scope, FakeUpload("job.xlsx", b"sheet")
+            )
+            self.assertTrue(image.absolute_path.exists())
+            self.assertTrue(jd.absolute_path.exists())
+
 
 if __name__ == "__main__":
     unittest.main()
