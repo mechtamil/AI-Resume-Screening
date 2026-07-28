@@ -14,21 +14,31 @@
 ## P1 — Required before global production
 
 - [x] Sprint 5.7.1B: isolate uploads, temporary files and exports by tenant/user/session.
-- [ ] Sprint 5.7.1C: tenant-specific configuration and cache isolation.
+- [x] Sprint 5.7.1C: tenant-specific configuration, immutable versions, cache isolation and screening snapshots.
 - [ ] Sprint 5.7.1D: explicit Reader sharing and revocation.
 - [ ] Implement production email/identity-provider password reset.
 - [ ] Add MFA/enterprise SSO roadmap implementation.
 - [ ] Add production database, concurrency and observability.
 - [ ] Add privacy retention, audit viewer and data lifecycle controls.
 
-## P2 — Product quality
+## P2 — AI-powered screening foundation
+
+- [ ] Sprint 5.7.2A: AI provider gateway and model registry.
+- [ ] Sprint 5.7.2B: schema-validated AI resume/JD extraction with evidence.
+- [ ] Sprint 5.7.2C: tenant-isolated embeddings and hybrid retrieval.
+- [ ] Sprint 5.7.2D: explainable AI screening and human review.
+- [ ] Sprint 5.7.2E: alternative-role intelligence.
+- [ ] Sprint 5.7.2F: recruiter copilot and interview intelligence.
+- [ ] Sprint 5.7.2G: prompt-injection, hidden-text, variance and fairness evaluation.
+
+## P3 — Product quality
 
 - [ ] Advanced experience timeline extraction.
 - [ ] Stronger domain, role, company and location extraction.
 - [ ] Private analytics, search, filters and pagination.
 - [ ] Localization and time-zone presentation.
 
-## P3 — Integrations
+## P4 — Integrations
 
 - [ ] Enterprise identity provider / Microsoft Entra ID.
 - [ ] ATS integration.

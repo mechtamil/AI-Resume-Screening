@@ -25,9 +25,10 @@ class CertificationExtractor:
 
     @classmethod
     def _repo(cls) -> CertificationRepository:
-        if cls.repository is None:
-            cls.repository = CertificationRepository()
-        return cls.repository
+        # Tests may inject a repository explicitly. Production code creates the
+        # repository inside the active ConfigurationContext so concurrent users
+        # never share another tenant's master data through a class-level cache.
+        return cls.repository if cls.repository is not None else CertificationRepository()
 
     @classmethod
     def _search_context(cls, text: str) -> str:

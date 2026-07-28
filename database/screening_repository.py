@@ -34,20 +34,24 @@ class ScreeningRepository:
         errors: list[dict[str, Any]] | None = None,
         session_key: str = "",
         status: str = "Completed",
+        configuration: dict[str, Any] | None = None,
         commit: bool = True,
     ) -> int:
         if not self._project_is_owned(project_id):
             raise PermissionError("The selected recruitment project is not available.")
 
         summary = summary or {}
+        configuration = configuration or {}
         key = str(session_key or "").strip() or uuid4().hex
         cursor = self.db.connection.execute(
             """
             INSERT INTO screening_sessions
             (tenant_id, created_by_user_id, project_id, session_key,
              resumes_requested, resumes_processed, resumes_failed,
-             shortlisted_count, status, errors_json, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             shortlisted_count, status, errors_json,
+             configuration_version_id, configuration_sha256,
+             configuration_snapshot_json, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 self.context.tenant_id,
@@ -60,6 +64,13 @@ class ScreeningRepository:
                 int(summary.get("shortlisted_count", 0) or 0),
                 status,
                 self._dump(errors or []),
+                (
+                    int(configuration["version_id"])
+                    if configuration.get("version_id") is not None
+                    else None
+                ),
+                str(configuration.get("sha256") or ""),
+                self._dump(configuration),
                 self._utc_now(),
             ),
         )

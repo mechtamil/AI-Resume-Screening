@@ -26,10 +26,10 @@ UploadService / ProcessingService                  PersistenceService
 DocumentManager / Parsers / Matchers          Project/Session/Candidate repos
         |                                                |
         v                                                v
-Configuration repositories                         Private SQLite records
-        |
-        v
-RecruitOS_Configuration.xlsx
+ConfigurationContext / TenantConfigurationService  Private SQLite records
+        |                                                |
+        v                                                v
+System default or immutable tenant workbook      Configuration snapshot metadata
 ```
 
 ## 2. Dependency rules
@@ -98,17 +98,17 @@ Administrative roles do not inherit unrestricted access to private candidate con
 
 ## 5. Database schema lifecycle
 
-Schema version `4` adds:
+Schema version `5` includes the schema-4 identity/RBAC model and adds:
 
-- employee User ID login fields
-- account lifecycle and temporary-password fields
-- roles, permissions and role-permission mappings
-- user-role assignments
-- password-reset requests
-- user-import jobs
-- audit events
+- `tenant_configuration_versions`
+- immutable version number and workbook fingerprint
+- activation status and audit actors/timestamps
+- screening-session `configuration_version_id`
+- screening-session `configuration_sha256`
+- screening-session `configuration_snapshot_json`
+- configuration view/manage permissions
 
-Existing schema-3 accounts are migrated safely. The first active pre-R1 account becomes System Owner; other active accounts become Users; disabled legacy data remains protected.
+Existing schema-3 and schema-4 databases migrate forward idempotently. Historical screening sessions remain readable; new sessions carry exact configuration provenance.
 
 ## 6. Private persistence scope
 
@@ -168,7 +168,29 @@ ScoreCalculator -> RecommendationRepository -> ranked MatchResult
 
 ## 10. Configuration and cache boundary
 
-`Master_Data/RecruitOS_Configuration.xlsx` is currently a system-wide workbook. Tenant-specific configuration and tenant-aware cache keys are planned for Sprint `5.7.1C`. Until then, admins cannot modify one user's scoring configuration independently.
+```text
+System default workbook
+        |
+        +--> immutable tenant version(s)
+                    |
+                    v
+TenantConfigurationService
+        +--> validation
+        +--> RBAC and target scope
+        +--> SHA-256 integrity
+        +--> activation/rollback audit
+                    |
+                    v
+ConfigurationContext (ContextVar)
+                    |
+                    v
+MasterRepository cache keyed by path + size + mtime
+                    |
+                    v
+Skill/Education/Certification/Scoring/Recommendation repositories
+```
+
+The active workbook is resolved once for the complete screening operation. Parser and matcher repositories are created inside the request-local context. No process-global extractor repository is retained when production dependency injection is not supplied.
 
 ## 11. Private file and export boundary
 
@@ -186,10 +208,7 @@ active Streamlit screening workflow.
 
 ## 12. Current deployment boundary
 
-Authentication, database ownership and filesystem ownership are implemented.
-Tenant-specific configuration isolation, controlled Reader sharing, retention,
-production database concurrency and deployment hardening remain required before
-a global internet-facing v1.0 release.
+Authentication, database ownership, filesystem ownership, clean repository policy and tenant configuration isolation are implemented. Controlled Reader sharing, retention, managed database/object storage, concurrency hardening and AI governance remain required before a global internet-facing v1.0 release.
 ## 13. Repository and release architecture
 
 ```text

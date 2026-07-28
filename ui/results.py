@@ -43,6 +43,18 @@ def show(context: SecurityContext) -> None:
     st.write("**Mandatory Skills:**", ", ".join(jd.mandatory_skills) or "None")
     st.write("**Preferred Skills:**", ", ".join(jd.preferred_skills) or "None")
 
+    configuration = dict(result.get("configuration") or {})
+    if configuration:
+        source = (
+            f"Tenant version {configuration.get('version_number')}"
+            if configuration.get("source") == "tenant_version"
+            else "System default"
+        )
+        st.caption(
+            f"Configuration: {source} · SHA-256 "
+            f"{str(configuration.get('sha256') or '')[:12]}"
+        )
+
     if not matches:
         st.info("No candidates were successfully processed.")
         _show_processing_errors(result)

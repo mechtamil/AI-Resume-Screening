@@ -112,6 +112,7 @@ def show_resume_screening(context: SecurityContext) -> None:
                     resume_paths=[item.absolute_path for item in resume_assets],
                     skill_list_path=(skill_asset.absolute_path if skill_asset else None),
                     job_id=job_id,
+                    security_context=context,
                 )
                 result["project"] = {
                     "project_name": project_name,

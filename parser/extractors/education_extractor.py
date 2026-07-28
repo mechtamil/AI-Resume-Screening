@@ -40,9 +40,10 @@ class EducationExtractor:
 
     @classmethod
     def _repo(cls) -> EducationRepository:
-        if cls.repository is None:
-            cls.repository = EducationRepository()
-        return cls.repository
+        # Tests may inject a repository explicitly. Production code creates the
+        # repository inside the active ConfigurationContext so concurrent users
+        # never share another tenant's master data through a class-level cache.
+        return cls.repository if cls.repository is not None else EducationRepository()
 
     @classmethod
     def _education_section(cls, text: str) -> str:

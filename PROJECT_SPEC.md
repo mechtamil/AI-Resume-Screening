@@ -5,11 +5,11 @@
 - **Product:** RecruitOS — AI Resume Screening & Recruitment Platform
 - **Organization:** ALTEN
 - **Owner:** Tamilvanan A
-- **Current version:** `0.7.3`
-- **Current milestone:** `5.7.1B-R1 — Repository Rebaseline & Deployment Guardrails`
-- **Database schema:** `4`
+- **Current version:** `0.7.4`
+- **Current milestone:** `5.7.1C — Tenant-Specific Configuration & AI-Ready Taxonomy Foundation`
+- **Database schema:** `5`
 - **Technology:** Python, Streamlit, pandas, SQLite, openpyxl, PyMuPDF and python-docx
-- **Status:** Active development. Identity, RBAC, private database records, private runtime files and repository/deployment guardrails are implemented.
+- **Status:** Active development. Identity, RBAC, private data/files, clean deployment guardrails and tenant-specific configuration versioning are implemented.
 
 ## 2. Product objective
 
@@ -137,19 +137,25 @@ RecruitOS must be visually differentiated, responsive and accessible rather than
 
 ## 10. Configuration architecture
 
-The single authoritative business workbook is:
+The source-controlled system default is:
 
 `Master_Data/RecruitOS_Configuration.xlsx`
+
+Each private workspace may receive immutable, validated tenant versions under the runtime-only `Master_Data/private/tenant_<id>/` tree. The active configuration is resolved through a request-local `ConfigurationContext`; repository caches are keyed by workbook identity so one workspace cannot reuse another workspace's master data.
 
 Required sheets include Skills, Education, Certifications, Companies, Locations, Domains, Languages, Roles, Industries, Scoring, Recommendation and Configuration.
 
 Rules:
 
 - Business/master values are not hardcoded in Python.
-- Scoring weights and recommendations come from the workbook.
+- Scoring weights and recommendations come from the resolved workbook.
 - Active scoring weights must total 100.
 - Recommendation ranges must cover 0–100 continuously without overlap.
+- Uploaded workbooks are validated before publication and stored as immutable versions.
+- Activation and rollback are explicit, RBAC-controlled and audit logged.
+- Every screening session stores the configuration version, SHA-256 fingerprint and sheet summary used for that result.
 - Authentication/security settings are deployment configuration, not business master data.
+- Configuration snapshots are the future governance anchor for AI model, prompt, embedding and taxonomy versions.
 
 ## 11. Testing and quality gate
 
@@ -178,7 +184,7 @@ paths do not grant access.
 ## 13. Current production boundary
 
 Authentication, database and runtime file isolation are implemented. RecruitOS
-still requires tenant-specific configuration, explicit Reader sharing, privacy
+still requires explicit Reader sharing, privacy
 retention controls, production database/concurrency hardening and deployment
 security acceptance before global internet-facing v1.0 release.
 ## 14. Repository and deployment integrity

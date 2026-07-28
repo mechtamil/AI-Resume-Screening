@@ -12,28 +12,58 @@ from services.user_management_service import UserManagementService
 
 TEST_PASSWORD = "Correct Horse Battery 123!"
 TEST_TEMPORARY_PASSWORD = "Temp@123"
+# Automated-test-only value. This is not a deployment secret.
+TEST_SETUP_KEY = "RecruitOS-Automated-Test-Setup-Key"
+
 TEST_OWNER_USER_ID = "TEST-SYSTEM-OWNER"
 TEST_OWNER_EMAIL = "system.owner@recruitos.test"
 TEST_LOCATION = "India - Chennai"
 
 
-def create_owner_context(database_path: str | Path) -> SecurityContext:
-    """Create or authenticate the one test System Owner."""
-    if AuthService.owner_setup_required(database_path):
-        with patch("services.auth_service.INITIAL_OWNER_SETUP_ENABLED", True):
+def create_owner_context(
+    database_path: str | Path,
+) -> SecurityContext:
+    """
+    Create or authenticate the isolated automated-test
+    System Owner.
+
+    Automated tests must never depend on the local or
+    production Streamlit deployment setup key.
+    """
+
+    if AuthService.owner_setup_required(
+        database_path
+    ):
+
+        with (
+            patch(
+                "services.auth_service."
+                "INITIAL_OWNER_SETUP_ENABLED",
+                True,
+            ),
+            patch(
+                "services.auth_service."
+                "INITIAL_SETUP_KEY",
+                TEST_SETUP_KEY,
+            ),
+        ):
+
             AuthService.bootstrap_system_owner(
                 user_id=TEST_OWNER_USER_ID,
                 full_name="Test System Owner",
                 email=TEST_OWNER_EMAIL,
                 country_location=TEST_LOCATION,
                 password=TEST_PASSWORD,
+                setup_key=TEST_SETUP_KEY,
                 database_path=database_path,
             )
+
     context, _ = AuthService.authenticate(
         user_id=TEST_OWNER_USER_ID,
         password=TEST_PASSWORD,
         database_path=database_path,
     )
+
     return context
 
 

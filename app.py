@@ -14,6 +14,7 @@ from ui.authentication import (
 )
 from ui.brand_components import page_header_html, sidebar_brand_html
 from ui.candidate_database import show_candidate_database
+from ui.configuration_management import show_configuration_management
 from ui.home import show_home
 from ui.results import show as show_results
 from ui.resume_screening import show_resume_screening
@@ -62,6 +63,8 @@ elif page == "Candidate Database":
     show_candidate_database(security_context)
 elif page == "Administration":
     show_user_administration(security_context)
+elif page == "Configuration":
+    show_configuration_management(security_context)
 elif page == "Shared Records":
     st.markdown(
         page_header_html(

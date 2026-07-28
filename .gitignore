@@ -73,6 +73,9 @@ JD/*.docx
 *.bak
 *.backup
 
+# Tenant-private configuration versions
+Master_Data/private/
+
 # Legacy separate master workbooks; central workbook is authoritative
 Master_Data/*_master.xlsx
 Master_Data/*backup*.xlsx

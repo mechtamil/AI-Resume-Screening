@@ -75,3 +75,32 @@
 - No page may create its own brand palette.
 - No repository may expose unscoped project/session/candidate/match queries.
 - No service may store or re-export existing plaintext passwords.
+
+## Sprint 5.7.1C additions
+
+### `models/configuration_version.py`
+Immutable resolved workbook metadata and persistence-safe configuration summary.
+
+### `services/configuration_context.py`
+Context-local active configuration using `ContextVar`; prevents concurrent users from sharing mutable workbook state.
+
+### `database/tenant_configuration_repository.py`
+Schema-5 persistence for immutable tenant configuration versions and activation history.
+
+### `services/tenant_configuration_service.py`
+RBAC, target-user scope, upload validation, immutable storage, SHA-256 integrity, activation, rollback, download and screening snapshot orchestration.
+
+### `ui/configuration_management.py`
+Active configuration health, sheet coverage, version history, authorized publication and activation UI.
+
+### `tests/test_configuration_context.py`
+Context restoration and cross-tenant cache isolation.
+
+### `tests/test_tenant_configuration_service.py`
+Version lifecycle, RBAC, duplicate prevention and tamper detection.
+
+### `tests/test_configuration_screening_isolation.py`
+End-to-end proof that different tenant taxonomies produce isolated extraction results.
+
+### `tests/test_configuration_snapshot_persistence.py`
+Reopen-time configuration provenance contract.

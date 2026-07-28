@@ -4,7 +4,7 @@ RecruitOS is ALTEN's configuration-driven AI Resume Screening and Recruitment Pl
 
 ## Current version
 
-`0.7.3` — Milestone `5.7.1B-R1: Repository Rebaseline & Deployment Guardrails`
+`0.7.4` — Sprint `5.7.1C: Tenant-Specific Configuration & AI-Ready Taxonomy Foundation`
 
 ## Current capabilities
 
@@ -14,10 +14,11 @@ RecruitOS is ALTEN's configuration-driven AI Resume Screening and Recruitment Pl
 - mandatory first-login password reset
 - single-user and Excel bulk user creation
 - private project/session/candidate/result persistence
-- central configuration workbook
+- system-default plus immutable tenant-specific configuration versions
 - resume/JD parsing, matching, scoring, recommendations and ranking
 - ranked Excel screening export
 - tenant/user/workspace-isolated uploads, temporary files and reports
+- configuration snapshot provenance for every screening
 - repository policy, clean source-release builder and CI quality gate
 
 ## Setup
@@ -50,9 +51,7 @@ System Owner, Global Admin and Tenant Admin users can access User Management acc
 
 ## Configuration
 
-The authoritative workbook is:
-
-`Master_Data/RecruitOS_Configuration.xlsx`
+The system default is `Master_Data/RecruitOS_Configuration.xlsx`. Authorized administrators can publish and activate validated immutable versions for a private workspace from the Configuration page. Every screening stores the exact configuration fingerprint used.
 
 ## Documentation
 
@@ -65,6 +64,8 @@ The authoritative workbook is:
 - `docs/SPRINT_5.7.1A_R1_ADMIN_RBAC_BRAND.md`
 - `docs/SPRINT_5.7.1B_SECURE_FILE_EXPORT_ISOLATION.md`
 - `docs/SPRINT_5.7.1B_R1_REPOSITORY_REBASELINE.md`
+- `docs/SPRINT_5.7.1C_TENANT_CONFIGURATION.md`
+- `docs/AI_REFERENCE_ADOPTION.md`
 
 ## Repository and release gate
 
@@ -82,4 +83,4 @@ Build a source-only package only after Git is clean:
 python -m tools.build_clean_release
 ```
 
-RecruitOS still requires tenant configuration, explicit Reader sharing and production database/object-storage hardening before a global v1.0 release.
+RecruitOS still requires explicit Reader sharing and production database/object-storage hardening before a global v1.0 release.

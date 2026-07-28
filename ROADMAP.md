@@ -1,93 +1,97 @@
 # RecruitOS Roadmap
 
-## Completed baseline
+## Current baseline
 
-### 5.5.x — Configuration & Repository Framework
-Central workbook and domain repositories.
+- **Version:** `0.7.4`
+- **Completed sprint:** `5.7.1C — Tenant-Specific Configuration & AI-Ready Taxonomy Foundation`
+- **Database schema:** `5`
+- **Deployment target:** Streamlit development environment
 
-### 5.6.0 / 5.6.A — Parser Integration, Audit Remediation & Stabilization
-Clean-clone reproducibility, parser fixes, modular matching, score/recommendation integration, end-to-end processing, tests and documentation.
+## Completed platform foundation
 
-### 5.7.0 — Report & Export Engine
-Ranked Excel report and Results download integration.
+- `5.6.A` — audited remediation and stabilized parsing/matching baseline
+- `5.7.0` — ranked Excel report engine
+- `5.7.1` — project, candidate and screening-session persistence
+- `5.7.1A` — multi-user identity and database isolation
+- `5.7.1A-R1` — admin provisioning, RBAC and ALTEN experience
+- `5.7.1B` — secure upload, temporary-file and export isolation
+- `5.7.1B-R1` — clean repository rebaseline and deployment guardrails
+- `5.7.1C` — tenant-specific configuration versions, cache isolation and screening provenance
 
-### 5.7.1 — Persistence Integration
-Private projects, sessions, candidates and MatchResult persistence/reopening.
+## Next platform sprint
 
-### 5.7.1A — Multi-User Identity & Database Isolation
-Server-side authentication sessions, SecurityContext and private owner-scoped repositories.
+### 5.7.1D — Explicit Reader Sharing & Review Assignment
 
-### 5.7.1A-R1 — Admin-Provisioned Identity, RBAC & ALTEN Experience
-- public registration removed
-- User ID/password login and Forgot Password request
-- one-time System Owner bootstrap
-- five-role RBAC model
-- single-user and Excel bulk provisioning
-- optional Time Zone
-- configurable seven-day temporary credential
-- mandatory first-login password change
-- User Access Master and one-time temporary credential exports
-- role/status/reset administration and audit records
-- schema version 4
-- premium responsive ALTEN-aligned theme and animations
+- private-by-default project sharing
+- Reader and reviewer assignment
+- read-only evidence views
+- expiry and revocation
+- backend ownership/share authorization
+- sharing audit trail
+- cross-user sharing denial/allowance tests
 
-## Remaining to v1.0
+## AI-powered screening milestone
 
-### 5.7.1B — Secure File & Export Isolation — **Completed**
-- tenant/user/session-scoped JD, resume and skill-list paths
-- owner-authorized file retrieval, listing and project-workspace deletion
-- private temporary processing directories and cleanup
-- private report-generation/output paths
-- SHA-256 file metadata and randomized stored names
-- cross-user file access, listing and deletion denial tests
+The deterministic matching engine remains authoritative and traceable. AI adds structured evidence, semantic retrieval and recruiter assistance; it does not silently replace mandatory rules or auto-reject candidates.
 
-### 5.7.1B-R1 — Repository Rebaseline & Deployment Guardrails — **Completed**
-- comprehensive Git ignore and line-ending policy
-- secrets/runtime/private-data repository guard
-- deterministic source-only release package builder
-- SHA-256 source manifest
-- GitHub quality workflow
-- fail-closed public System Owner bootstrap
-- fresh repository cutover procedure
+### 5.7.2A — AI Provider Gateway & Model Registry
+- local/hosted provider abstraction
+- tenant model policy
+- secret-safe provider configuration
+- structured-output validation
+- latency/cost/error telemetry
+- model and prompt version registry
 
-### 5.7.1C — Tenant Configuration Management — **Next**
-- system default versus tenant configuration
-- tenant-aware repository/cache construction
-- workbook upload, validation, backup and versioning
-- configuration snapshot per screening
+### 5.7.2B — AI Structured Resume/JD Extraction
+- section-specific extraction schemas
+- evidence and source-section mapping
+- deterministic/AI conflict detection
+- multilingual-ready text handling
+- confidence and human correction workflow
 
-### 5.7.1D — Controlled Sharing & Reader Workflow
-- explicit project/session/report shares
-- read-only Reader assignments
-- share expiry and revocation
-- audit records and access tests
+### 5.7.2C — Embeddings & Hybrid Retrieval
+- tenant-isolated vector indexes
+- keyword + taxonomy + semantic retrieval
+- fusion and reranking
+- small-to-big resume retrieval
+- large-candidate-pool benchmarks
 
-### 5.8.0 — Audit, Privacy & Retention
-- admin audit viewer
-- retention/deletion policies
-- user data export and deactivation lifecycle
-- break-glass access design
+### 5.7.2D — Explainable AI Screening
+- role-specific evaluation packs
+- evidence-grounded assessment
+- confidence and uncertainty
+- deterministic score shown separately
+- human review and override
 
+### 5.7.2E — Alternative Role Intelligence
+- configurable role taxonomy
+- TF-IDF/SVM baseline
+- embedding and supervised-model comparison
+- top-K adjacent-role recommendations
+- transferable-skill evidence
+
+### 5.7.2F — Recruiter Copilot & Interview Intelligence
+- authorized candidate search and comparison
+- ranking explanations
+- evidence-grounded recruiter Q&A
+- candidate-specific interview questions
+- no cross-tenant retrieval
+
+### 5.7.2G — AI Safety, Fairness & Evaluation
+- prompt-injection and hidden-text detection
+- repeated-run variance testing
+- benchmark datasets and confusion matrices
+- bias/fairness review
+- model approval, rollback and audit metadata
+
+## Production hardening
+
+### 5.8.0 — Privacy, Retention & Audit Operations
 ### 5.8.1 — Advanced Parsing & Matching Quality
-- employment timeline experience
-- stronger domain/role/company/location normalization
-- advanced preferred-skill and education semantics
-
-### 5.8.2 — Production Database, Concurrency & Reliability
-- production database strategy
-- concurrent-user and batch processing
-- structured observability, recovery and performance tests
-
-### 5.9.0 — Private Analytics & Global UX
-- owner-scoped analytics and funnel
-- search/filter/pagination
-- localization/time-zone presentation
-
+### 5.8.2 — Production Database, Object Storage & Concurrency
+### 5.9.0 — Private Analytics, Localization & Global UX
 ### 5.9.1 — v1.0 Release Candidate
-- full security, regression and acceptance suite
-- dependency lock and deployment runbooks
-- release notes, version tag and deployment smoke test
 
 ## Current estimate
 
-After acceptance of `5.7.1B-R1`, **7 focused sprints** remain in the current v1.0 scope. Changes require an explicit roadmap update.
+After acceptance of `5.7.1C`, **11 focused sprints** remain in the expanded platform + AI v1.0 scope. Scope changes require an explicit roadmap update.

@@ -293,7 +293,7 @@ class UserRepository:
             conditions.append("u.account_status <> 'DISABLED'")
         rows = self.db.connection.execute(
             f"""
-            SELECT u.id, u.employee_user_id, u.display_name, u.email,
+            SELECT u.id, tm.tenant_id, u.employee_user_id, u.display_name, u.email,
                    u.country_location, u.time_zone, u.department, u.business_unit,
                    u.manager_user_id, u.role_code, u.account_status,
                    u.must_change_password, u.temporary_password_expires_at,
@@ -301,6 +301,7 @@ class UserRepository:
                    u.failed_login_count, u.locked_until,
                    u.created_by_user_id, u.created_at, u.updated_at
             FROM users u
+            JOIN tenant_memberships tm ON tm.user_id = u.id
             WHERE {' AND '.join(conditions)}
             ORDER BY u.display_name COLLATE NOCASE, u.employee_user_id
             """,

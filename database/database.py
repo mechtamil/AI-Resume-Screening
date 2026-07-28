@@ -13,7 +13,7 @@ from config.paths import DATABASE_PATH
 class Database:
     """Own a SQLite connection and apply idempotent schema migrations."""
 
-    SCHEMA_VERSION = 4
+    SCHEMA_VERSION = 5
     LEGACY_TENANT_KEY = "legacy-imported-data"
     LEGACY_USER_KEY = "legacy-imported-user"
     LEGACY_USER_EMAIL = "legacy-imported@recruitos.local"
@@ -48,6 +48,10 @@ class Database:
         if current_version < 4:
             self._migration_4_add_admin_provisioning_rbac()
             self._record_migration(4)
+
+        if current_version < 5:
+            self._migration_5_add_tenant_configuration_versions()
+            self._record_migration(5)
 
         self.connection.commit()
 
@@ -723,6 +727,113 @@ class Database:
                 ON audit_events(actor_user_id, created_at DESC);
             """
         )
+
+    def _migration_5_add_tenant_configuration_versions(self) -> None:
+        """Add immutable tenant configuration versions and screening snapshots."""
+        self._migration_4_add_admin_provisioning_rbac()
+        self.connection.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS tenant_configuration_versions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tenant_id INTEGER NOT NULL,
+                configuration_key TEXT NOT NULL,
+                version_number INTEGER NOT NULL,
+                source_name TEXT NOT NULL DEFAULT '',
+                file_path TEXT NOT NULL,
+                file_sha256 TEXT NOT NULL,
+                file_size INTEGER NOT NULL DEFAULT 0,
+                validation_json TEXT NOT NULL DEFAULT '{}',
+                status TEXT NOT NULL DEFAULT 'DRAFT',
+                created_by_user_id INTEGER NOT NULL,
+                created_at TEXT NOT NULL,
+                activated_by_user_id INTEGER,
+                activated_at TEXT NOT NULL DEFAULT '',
+                FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+                FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE RESTRICT,
+                FOREIGN KEY (activated_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+                UNIQUE (tenant_id, version_number),
+                UNIQUE (tenant_id, file_sha256)
+            );
+
+            CREATE INDEX IF NOT EXISTS ix_tenant_configuration_active
+                ON tenant_configuration_versions(tenant_id, status, activated_at DESC);
+
+            CREATE INDEX IF NOT EXISTS ix_tenant_configuration_created
+                ON tenant_configuration_versions(tenant_id, created_at DESC);
+            """
+        )
+
+        session_columns = {
+            "configuration_version_id": "INTEGER",
+            "configuration_sha256": "TEXT NOT NULL DEFAULT ''",
+            "configuration_snapshot_json": "TEXT NOT NULL DEFAULT '{}'",
+        }
+        for column_name, definition in session_columns.items():
+            self._ensure_column("screening_sessions", column_name, definition)
+
+        now = self._utc_now()
+        permissions = (
+            (
+                "CONFIGURATION_VIEW",
+                "View active workspace configuration",
+                "configuration",
+                "read",
+            ),
+            (
+                "CONFIGURATION_MANAGE_GLOBAL",
+                "Manage configuration for any workspace",
+                "configuration",
+                "manage_global",
+            ),
+            (
+                "CONFIGURATION_MANAGE_TENANT",
+                "Manage configuration in assigned scope",
+                "configuration",
+                "manage_scope",
+            ),
+        )
+        self.connection.executemany(
+            """
+            INSERT OR IGNORE INTO permissions
+            (permission_code, permission_name, resource, action, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            [(code, name, resource, action, now) for code, name, resource, action in permissions],
+        )
+
+        role_permissions = {
+            "SYSTEM_OWNER": {
+                "CONFIGURATION_VIEW",
+                "CONFIGURATION_MANAGE_GLOBAL",
+                "CONFIGURATION_MANAGE_TENANT",
+            },
+            "GLOBAL_ADMIN": {
+                "CONFIGURATION_VIEW",
+                "CONFIGURATION_MANAGE_GLOBAL",
+                "CONFIGURATION_MANAGE_TENANT",
+            },
+            "TENANT_ADMIN": {
+                "CONFIGURATION_VIEW",
+                "CONFIGURATION_MANAGE_TENANT",
+            },
+            "USER": {"CONFIGURATION_VIEW"},
+        }
+        for role_code, permission_codes in role_permissions.items():
+            role_row = self.connection.execute(
+                "SELECT id FROM roles WHERE role_code = ?", (role_code,)
+            ).fetchone()
+            if not role_row:
+                continue
+            for permission_code in permission_codes:
+                permission_row = self.connection.execute(
+                    "SELECT id FROM permissions WHERE permission_code = ?",
+                    (permission_code,),
+                ).fetchone()
+                if permission_row:
+                    self.connection.execute(
+                        "INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)",
+                        (int(role_row["id"]), int(permission_row["id"])),
+                    )
 
     def _ensure_legacy_owner(self) -> tuple[int, int]:
         now = self._utc_now()

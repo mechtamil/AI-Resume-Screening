@@ -42,6 +42,7 @@ class PersistenceService:
         summary = dict(analysis_result.get("summary") or {})
         errors = list(analysis_result.get("errors") or [])
         project_data = dict(analysis_result.get("project") or {})
+        configuration_data = dict(analysis_result.get("configuration") or {})
 
         project = RecruitmentProject(
             project_name=str(
@@ -98,6 +99,7 @@ class PersistenceService:
                     summary=session_summary,
                     errors=errors,
                     session_key=session_key,
+                    configuration=configuration_data,
                     commit=False,
                 )
 
@@ -192,12 +194,22 @@ class PersistenceService:
             candidate_models = candidates.list_candidates(session_id=int(session_id))
             match_results = screenings.get_match_results(int(session_id))
             errors = cls._load_json(session.get("errors_json"), [])
+            configuration = cls._load_json(
+                session.get("configuration_snapshot_json"),
+                {},
+            )
+            if not configuration and str(session.get("configuration_sha256") or ""):
+                configuration = {
+                    "version_id": session.get("configuration_version_id"),
+                    "sha256": str(session.get("configuration_sha256") or ""),
+                }
 
             return {
                 "job_description": job,
                 "candidates": candidate_models,
                 "match_results": match_results,
                 "errors": errors,
+                "configuration": configuration,
                 "summary": {
                     "resumes_requested": int(session.get("resumes_requested") or 0),
                     "resumes_processed": int(session.get("resumes_processed") or 0),

@@ -1,5 +1,32 @@
 # RecruitOS Changelog
 
+## 0.7.4 — Sprint 5.7.1C Tenant-Specific Configuration & AI-Ready Taxonomy Foundation
+
+### Added
+- Immutable tenant/workspace configuration versions with SHA-256 integrity checks.
+- RBAC-controlled configuration upload, validation, activation, rollback and download.
+- Context-local configuration selection using `ContextVar` for concurrent Streamlit users.
+- Workbook cache isolation by resolved file path, file size and modification time.
+- Database schema version 5 with `tenant_configuration_versions` and screening-session configuration snapshots.
+- Configuration page with active-source health, sheet coverage and version history.
+- Audit events for configuration publication, activation and fallback to system default.
+- End-to-end tests proving that two users can screen the same text with different private taxonomies without cache leakage.
+- AI reference adoption plan covering structured extraction, hybrid retrieval, explainability, alternative-role intelligence, recruiter copilot and AI safety.
+
+### Changed
+- Application version increased to `0.7.4`.
+- `ProcessingService` resolves one immutable configuration for the complete screening operation.
+- Resume/JD extractors no longer retain process-global repository instances.
+- Results display the configuration source and fingerprint used for the screening.
+- Runtime tenant workbooks are ignored by Git and remain outside clean source releases.
+
+### Security and governance
+- Users can view only their own active configuration; authorized administrators may manage permitted target workspaces.
+- Tenant Admin configuration authority remains country/location scoped.
+- Uploaded workbooks are validated before storage and revalidated before activation.
+- Configuration files are stored in tenant-specific paths and verified before use.
+- Reopened screening sessions retain the exact configuration version and SHA-256 provenance.
+
 ## 0.7.3 — Milestone 5.7.1B-R1 Repository Rebaseline & Deployment Guardrails
 
 ### Added

@@ -37,6 +37,7 @@ class DatabaseTests(unittest.TestCase):
                     "audit_events",
                     "password_reset_requests",
                     "user_import_jobs",
+                    "tenant_configuration_versions",
                 }.issubset(names)
             )
             self.assertEqual(db.get_schema_version(), Database.SCHEMA_VERSION)
@@ -58,6 +59,13 @@ class DatabaseTests(unittest.TestCase):
                     "must_change_password",
                     "temporary_password_expires_at",
                 }.issubset(db.table_columns("users"))
+            )
+            self.assertTrue(
+                {
+                    "configuration_version_id",
+                    "configuration_sha256",
+                    "configuration_snapshot_json",
+                }.issubset(db.table_columns("screening_sessions"))
             )
             role_codes = {
                 row[0]
@@ -119,7 +127,7 @@ class DatabaseTests(unittest.TestCase):
                 FROM users WHERE user_key = 'schema3-user'
                 """
             ).fetchone()
-            self.assertEqual(upgraded.get_schema_version(), 4)
+            self.assertEqual(upgraded.get_schema_version(), 5)
             self.assertEqual(row["role_code"], "SYSTEM_OWNER")
             self.assertEqual(row["account_status"], "ACTIVE")
             self.assertTrue(str(row["employee_user_id"]).startswith("U"))

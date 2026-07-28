@@ -32,6 +32,10 @@ class AuthorizationServiceTests(unittest.TestCase):
         self.assertIn("Administration", AuthorizationService.pages_for_context(context(GLOBAL_ADMIN)))
         self.assertIn("Administration", AuthorizationService.pages_for_context(context(TENANT_ADMIN)))
         self.assertNotIn("Administration", AuthorizationService.pages_for_context(context(USER)))
+        self.assertIn("Configuration", AuthorizationService.pages_for_context(context(SYSTEM_OWNER)))
+        self.assertIn("Configuration", AuthorizationService.pages_for_context(context(GLOBAL_ADMIN)))
+        self.assertIn("Configuration", AuthorizationService.pages_for_context(context(TENANT_ADMIN)))
+        self.assertIn("Configuration", AuthorizationService.pages_for_context(context(USER)))
         self.assertEqual(
             AuthorizationService.pages_for_context(context(READER)),
             ["Home", "Shared Records"],
