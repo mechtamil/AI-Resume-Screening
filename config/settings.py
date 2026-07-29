@@ -105,6 +105,23 @@ MAX_RESUMES_PER_SCREENING = _environment_int(
 )
 DEFAULT_REPORT_NAME = "Candidate_Report.xlsx"
 
+# OCR runtime path is deployment configuration. It is intentionally optional:
+# - local Windows/macOS/Linux can set RECRUITOS_TESSERACT_CMD,
+# - any deployment with "tesseract" on PATH can leave it empty,
+# - Streamlit Cloud installs tesseract-ocr through packages.txt.
+TESSERACT_CMD = str(
+    _deployment_value("RECRUITOS_TESSERACT_CMD", "")
+).strip()
+OCR_LANGUAGES = str(
+    _deployment_value("RECRUITOS_OCR_LANGUAGES", "eng")
+).strip() or "eng"
+OCR_PAGE_SEGMENTATION_MODE = _environment_int(
+    "RECRUITOS_OCR_PSM",
+    3,
+    minimum=0,
+)
+OCR_PAGE_SEGMENTATION_MODE = min(13, OCR_PAGE_SEGMENTATION_MODE)
+
 # Public self-registration is intentionally disabled. Users are provisioned by
 # the System Owner, Global Admin, or a scope-limited Tenant Admin.
 ALLOW_SELF_REGISTRATION = False

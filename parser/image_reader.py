@@ -1,21 +1,20 @@
 """OCR-backed image reader for common resume and JD image formats."""
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 from PIL import Image, ImageOps
 
-
-SUPPORTED_OCR_LANGUAGES = os.getenv("RECRUITOS_OCR_LANGUAGES", "eng").strip() or "eng"
-try:
-    OCR_PAGE_SEGMENTATION_MODE = max(0, min(13, int(os.getenv("RECRUITOS_OCR_PSM", "3"))))
-except ValueError:
-    OCR_PAGE_SEGMENTATION_MODE = 3
+from config.settings import (
+    OCR_LANGUAGES,
+    OCR_PAGE_SEGMENTATION_MODE,
+    TESSERACT_CMD,
+)
+from services.ocr_runtime import configure_pytesseract
 
 
 def _ocr_image(image: Image.Image) -> str:
-    """Extract text from one image through the installed Tesseract engine."""
+    """Extract text from one image through the configured Tesseract engine."""
     try:
         import pytesseract
     except ImportError as exc:  # pragma: no cover - dependency guard
@@ -25,15 +24,21 @@ def _ocr_image(image: Image.Image) -> str:
 
     prepared = ImageOps.exif_transpose(image).convert("RGB")
     try:
+        configure_pytesseract(
+            pytesseract,
+            configured_command=TESSERACT_CMD,
+        )
         return pytesseract.image_to_string(
             prepared,
-            lang=SUPPORTED_OCR_LANGUAGES,
+            lang=OCR_LANGUAGES,
             config=f"--psm {OCR_PAGE_SEGMENTATION_MODE}",
         ).strip()
+    except RuntimeError:
+        raise
     except pytesseract.TesseractNotFoundError as exc:
         raise RuntimeError(
-            "Image OCR requires the Tesseract runtime. Install tesseract-ocr "
-            "locally or include it in Streamlit Cloud packages.txt."
+            "Image OCR requires the Tesseract runtime. Install it and expose "
+            "'tesseract' on PATH, or configure RECRUITOS_TESSERACT_CMD."
         ) from exc
     except Exception as exc:
         raise RuntimeError("Unable to extract text from the image.") from exc

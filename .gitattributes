@@ -12,6 +12,10 @@
 *.gitignore text eol=lf
 *.gitattributes text eol=lf
 
+# Named/compound example files that are not covered by extension rules above.
+VERSION text eol=lf
+*.example text eol=lf
+
 # Binary assets and business workbooks must never be line-normalized.
 *.xlsx binary
 *.xls binary

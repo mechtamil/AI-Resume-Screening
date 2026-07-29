@@ -5,6 +5,7 @@ import streamlit as st
 
 from config.settings import VERSION
 from services.authorization_service import AuthorizationService
+from ui.accessibility import apply_accessibility_overrides
 from ui.admin_users import show_user_administration
 from ui.authentication import (
     get_authenticated_context,
@@ -29,6 +30,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 apply_alten_theme("dark" if st.session_state.get("dark_mode") else "light")
+apply_accessibility_overrides()
 
 security_context = get_authenticated_context()
 if security_context is None:

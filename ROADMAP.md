@@ -2,8 +2,8 @@
 
 ## Current baseline
 
-- **Version:** `0.7.5`
-- **Completed sprint:** `5.7.1C-R1 — Universal Intake Templates & Guided Workspace UX`
+- **Version:** `0.7.6`
+- **Completed sprint:** `5.7.1C-R2 — Accessibility, Brand Governance & Portable OCR Runtime`
 - **Database schema:** `5`
 - **Deployment target:** Streamlit development environment
 
@@ -18,6 +18,7 @@
 - `5.7.1B-R1` — clean repository rebaseline and deployment guardrails
 - `5.7.1C` — tenant-specific configuration versions, cache isolation and screening provenance
 - `5.7.1C-R1` — multi-format intake, OCR, Excel templates, guided navigation and sidebar/home UX
+- `5.7.1C-R2` — accessible navigation/disabled states, mandatory ALTEN UI governance and deployment-configured OCR discovery
 
 ## Next platform sprint
 
@@ -95,4 +96,4 @@ The deterministic matching engine remains authoritative and traceable. AI adds s
 
 ## Current estimate
 
-After acceptance of `5.7.1C-R1`, **11 focused sprints** remain in the expanded platform + AI v1.0 scope. Scope changes require an explicit roadmap update.
+After acceptance of `5.7.1C-R2`, **11 focused sprints** remain in the expanded platform + AI v1.0 scope. Scope changes require an explicit roadmap update.

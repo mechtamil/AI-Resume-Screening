@@ -1,6 +1,8 @@
 """Streamlit workflow for private multi-format resume screening."""
 from __future__ import annotations
 
+from html import escape
+
 import streamlit as st
 
 from config.settings import (
@@ -25,6 +27,34 @@ def _uploader_types(values: tuple[str, ...]) -> list[str]:
 
 def _format_caption(values: tuple[str, ...]) -> str:
     return ", ".join(value.lstrip(".").upper() for value in values)
+
+
+def _analysis_blockers(
+    *,
+    has_job_description: bool,
+    resume_count: int,
+    maximum_resumes: int,
+) -> list[str]:
+    """Return clear actions required before screening can start."""
+    blockers: list[str] = []
+    if not has_job_description:
+        blockers.append("upload a Job Description")
+    if resume_count <= 0:
+        blockers.append("upload at least one candidate resume")
+    elif resume_count > maximum_resumes:
+        blockers.append(f"reduce candidate resumes to {maximum_resumes} or fewer")
+    return blockers
+
+
+def _guidance_html(blockers: list[str]) -> str:
+    """Render an accessible status message for incomplete screening inputs."""
+    safe_items = ", ".join(escape(item) for item in blockers)
+    return (
+        '<div class="ros-action-guidance" role="status" aria-live="polite">'
+        "<strong>Before analysis:</strong> "
+        f"{safe_items}."
+        "</div>"
+    )
 
 
 def show_resume_screening(context: SecurityContext) -> None:
@@ -135,17 +165,30 @@ def show_resume_screening(context: SecurityContext) -> None:
     input2.metric("Skill list", "Included" if uploaded_skill else "Optional")
     input3.metric("Candidate resumes", resume_count)
 
-    can_analyze = (
-        uploaded_jd is not None
-        and bool(uploaded_resumes)
-        and resume_count <= MAX_RESUMES_PER_SCREENING
+    blockers = _analysis_blockers(
+        has_job_description=uploaded_jd is not None,
+        resume_count=resume_count,
+        maximum_resumes=MAX_RESUMES_PER_SCREENING,
     )
+    can_analyze = not blockers
+
+    if blockers:
+        st.markdown(
+            _guidance_html(blockers),
+            unsafe_allow_html=True,
+        )
 
     if st.button(
         "Analyze and Save Candidates",
+        key="analyze_save_candidates",
         disabled=not can_analyze,
         type="primary",
         use_container_width=True,
+        help=(
+            "Upload the required inputs shown above before starting analysis."
+            if blockers
+            else "Analyze candidates, persist the private session and open ranked results."
+        ),
     ):
         scope = UploadService.create_workspace(context)
         persisted = False
