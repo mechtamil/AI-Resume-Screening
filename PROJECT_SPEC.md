@@ -5,11 +5,11 @@
 - **Product:** RecruitOS — AI Resume Screening & Recruitment Platform
 - **Organization:** ALTEN
 - **Owner:** Tamilvanan A
-- **Current version:** `0.7.5`
-- **Current milestone:** `5.7.1C-R1 — Universal Intake Templates & Guided Workspace UX`
-- **Database schema:** `5`
+- **Current version:** `0.7.7`
+- **Current milestone:** `5.7.1D — Explicit Reader Sharing & Review Assignment`
+- **Database schema:** `6`
 - **Technology:** Python, Streamlit, pandas, SQLite, openpyxl, PyMuPDF, python-docx, Pillow and Tesseract OCR
-- **Status:** Active development. Identity, RBAC, private data/files, clean deployment guardrails and tenant-specific configuration versioning are implemented.
+- **Status:** Active development. Identity, RBAC, private data/files, tenant configuration and explicit read-only sharing are implemented.
 
 ## 2. Product objective
 
@@ -115,8 +115,20 @@ RecruitOS is private by default.
 - Session, candidate and match queries require both `tenant_id` and `created_by_user_id`.
 - Numeric database identifiers cannot bypass ownership filters.
 - The same Job ID may exist independently for different users.
-- Reader access requires a future explicit sharing record; there is no implicit visibility.
+- Reader or Reviewer access requires an active explicit project share; there is no implicit visibility.
 - Candidate files, databases, logs, temporary files and exports must not be committed to Git.
+
+### 7.1 Explicit sharing contract
+
+- Only the authenticated owner may grant or revoke access to an owned project.
+- A share targets one active RecruitOS account and is either `READER` or `REVIEWER`.
+- Shared access is read-only for project, session, candidate and ranking evidence.
+- Reviewers may update assignment progress and notes, but cannot alter screening evidence.
+- Shares may have an expiry; expired and revoked shares fail authorization immediately.
+- Standard owner-scoped repositories remain private and are not reused as unscoped shared queries.
+- Shared-session loading verifies recipient, project and session boundaries before reconstruction.
+- Grant, review, expiry and revocation actions are recorded in `audit_events`.
+- System Owner and Global Admin may select active recipients globally; other owners are Country/Location scoped.
 
 ## 8. Administration functions
 
@@ -202,7 +214,7 @@ paths do not grant access.
 ## 13. Current production boundary
 
 Authentication, database and runtime file isolation are implemented. RecruitOS
-still requires explicit Reader sharing, privacy
+still requires privacy
 retention controls, production database/concurrency hardening and deployment
 security acceptance before global internet-facing v1.0 release.
 ## 14. Repository and deployment integrity

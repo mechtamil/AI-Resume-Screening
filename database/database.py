@@ -13,7 +13,7 @@ from config.paths import DATABASE_PATH
 class Database:
     """Own a SQLite connection and apply idempotent schema migrations."""
 
-    SCHEMA_VERSION = 5
+    SCHEMA_VERSION = 6
     LEGACY_TENANT_KEY = "legacy-imported-data"
     LEGACY_USER_KEY = "legacy-imported-user"
     LEGACY_USER_EMAIL = "legacy-imported@recruitos.local"
@@ -52,6 +52,10 @@ class Database:
         if current_version < 5:
             self._migration_5_add_tenant_configuration_versions()
             self._record_migration(5)
+
+        if current_version < 6:
+            self._migration_6_add_explicit_record_sharing()
+            self._record_migration(6)
 
         self.connection.commit()
 
@@ -821,6 +825,95 @@ class Database:
         for role_code, permission_codes in role_permissions.items():
             role_row = self.connection.execute(
                 "SELECT id FROM roles WHERE role_code = ?", (role_code,)
+            ).fetchone()
+            if not role_row:
+                continue
+            for permission_code in permission_codes:
+                permission_row = self.connection.execute(
+                    "SELECT id FROM permissions WHERE permission_code = ?",
+                    (permission_code,),
+                ).fetchone()
+                if permission_row:
+                    self.connection.execute(
+                        "INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)",
+                        (int(role_row["id"]), int(permission_row["id"])),
+                    )
+
+    def _migration_6_add_explicit_record_sharing(self) -> None:
+        """Add private-by-default project sharing and review assignments."""
+        self._migration_5_add_tenant_configuration_versions()
+        self.connection.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS record_shares (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                owner_tenant_id INTEGER NOT NULL,
+                owner_user_id INTEGER NOT NULL,
+                grantee_user_id INTEGER NOT NULL,
+                project_id INTEGER NOT NULL,
+                access_role TEXT NOT NULL DEFAULT 'READER',
+                status TEXT NOT NULL DEFAULT 'ACTIVE',
+                expires_at TEXT NOT NULL DEFAULT '',
+                note TEXT NOT NULL DEFAULT '',
+                review_status TEXT NOT NULL DEFAULT 'NOT_REQUIRED',
+                review_note TEXT NOT NULL DEFAULT '',
+                reviewed_at TEXT NOT NULL DEFAULT '',
+                reviewed_by_user_id INTEGER,
+                created_by_user_id INTEGER NOT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                revoked_by_user_id INTEGER,
+                revoked_at TEXT NOT NULL DEFAULT '',
+                FOREIGN KEY (owner_tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+                FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (grantee_user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (project_id) REFERENCES recruitment_projects(id) ON DELETE CASCADE,
+                FOREIGN KEY (reviewed_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+                FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE RESTRICT,
+                FOREIGN KEY (revoked_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+                CHECK (access_role IN ('READER', 'REVIEWER')),
+                CHECK (status IN ('ACTIVE', 'REVOKED', 'EXPIRED')),
+                CHECK (review_status IN ('NOT_REQUIRED', 'ASSIGNED', 'IN_REVIEW', 'COMPLETED'))
+            );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_record_shares_active_assignment
+                ON record_shares(project_id, grantee_user_id)
+                WHERE status = 'ACTIVE';
+
+            CREATE INDEX IF NOT EXISTS ix_record_shares_owner
+                ON record_shares(owner_tenant_id, owner_user_id, project_id, created_at DESC);
+
+            CREATE INDEX IF NOT EXISTS ix_record_shares_recipient
+                ON record_shares(grantee_user_id, status, expires_at, created_at DESC);
+
+            CREATE INDEX IF NOT EXISTS ix_record_shares_expiry
+                ON record_shares(status, expires_at)
+                WHERE status = 'ACTIVE' AND expires_at <> '';
+            """
+        )
+
+        now = self._utc_now()
+        self.connection.execute(
+            """
+            INSERT OR IGNORE INTO permissions
+            (permission_code, permission_name, resource, action, created_at)
+            VALUES ('SHARED_RECORDS_MANAGE_OWN',
+                    'Share owned projects and revoke access',
+                    'sharing', 'manage_own', ?)
+            """,
+            (now,),
+        )
+
+        role_permissions = {
+            "SYSTEM_OWNER": {"SHARED_RECORDS_READ", "SHARED_RECORDS_MANAGE_OWN"},
+            "GLOBAL_ADMIN": {"SHARED_RECORDS_READ", "SHARED_RECORDS_MANAGE_OWN"},
+            "TENANT_ADMIN": {"SHARED_RECORDS_READ", "SHARED_RECORDS_MANAGE_OWN"},
+            "USER": {"SHARED_RECORDS_READ", "SHARED_RECORDS_MANAGE_OWN"},
+            "READER": {"SHARED_RECORDS_READ"},
+        }
+        for role_code, permission_codes in role_permissions.items():
+            role_row = self.connection.execute(
+                "SELECT id FROM roles WHERE role_code = ?",
+                (role_code,),
             ).fetchone()
             if not role_row:
                 continue

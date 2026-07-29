@@ -38,6 +38,7 @@ class DatabaseTests(unittest.TestCase):
                     "password_reset_requests",
                     "user_import_jobs",
                     "tenant_configuration_versions",
+                    "record_shares",
                 }.issubset(names)
             )
             self.assertEqual(db.get_schema_version(), Database.SCHEMA_VERSION)
@@ -67,6 +68,20 @@ class DatabaseTests(unittest.TestCase):
                     "configuration_snapshot_json",
                 }.issubset(db.table_columns("screening_sessions"))
             )
+            self.assertTrue(
+                {
+                    "owner_tenant_id",
+                    "owner_user_id",
+                    "grantee_user_id",
+                    "project_id",
+                    "access_role",
+                    "status",
+                    "expires_at",
+                    "review_status",
+                    "review_note",
+                    "revoked_at",
+                }.issubset(db.table_columns("record_shares"))
+            )
             role_codes = {
                 row[0]
                 for row in db.connection.execute(
@@ -77,7 +92,47 @@ class DatabaseTests(unittest.TestCase):
                 role_codes,
                 {"SYSTEM_OWNER", "GLOBAL_ADMIN", "TENANT_ADMIN", "USER", "READER"},
             )
+            user_permissions = {
+                row[0]
+                for row in db.connection.execute(
+                    """
+                    SELECT p.permission_code
+                    FROM roles r
+                    JOIN role_permissions rp ON rp.role_id = r.id
+                    JOIN permissions p ON p.id = rp.permission_id
+                    WHERE r.role_code = 'USER'
+                    """
+                )
+            }
+            self.assertIn("SHARED_RECORDS_READ", user_permissions)
+            self.assertIn("SHARED_RECORDS_MANAGE_OWN", user_permissions)
             db.close()
+
+    def test_schema_five_database_migrates_to_explicit_sharing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "schema5.db"
+            db = Database(path)
+            db._create_migration_table()
+            db._migration_1_create_core_tables()
+            db._record_migration(1)
+            db._migration_2_add_persistence_contracts()
+            db._record_migration(2)
+            db._migration_3_add_multi_user_security()
+            db._record_migration(3)
+            db._migration_4_add_admin_provisioning_rbac()
+            db._record_migration(4)
+            db._migration_5_add_tenant_configuration_versions()
+            db._record_migration(5)
+            db.connection.commit()
+            self.assertEqual(db.get_schema_version(), 5)
+            db.close()
+
+            upgraded = Database(path)
+            upgraded.create_tables()
+            self.assertEqual(upgraded.get_schema_version(), 6)
+            self.assertTrue(upgraded.table_exists("record_shares"))
+            self.assertTrue(upgraded.table_exists("tenant_configuration_versions"))
+            upgraded.close()
 
     def test_schema_three_user_is_upgraded_to_system_owner(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -127,7 +182,7 @@ class DatabaseTests(unittest.TestCase):
                 FROM users WHERE user_key = 'schema3-user'
                 """
             ).fetchone()
-            self.assertEqual(upgraded.get_schema_version(), 5)
+            self.assertEqual(upgraded.get_schema_version(), 6)
             self.assertEqual(row["role_code"], "SYSTEM_OWNER")
             self.assertEqual(row["account_status"], "ACTIVE")
             self.assertTrue(str(row["employee_user_id"]).startswith("U"))

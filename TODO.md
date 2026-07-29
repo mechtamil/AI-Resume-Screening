@@ -23,7 +23,7 @@
 
 - [x] Sprint 5.7.1B: isolate uploads, temporary files and exports by tenant/user/session.
 - [x] Sprint 5.7.1C: tenant-specific configuration, immutable versions, cache isolation and screening snapshots.
-- [ ] Sprint 5.7.1D: explicit Reader sharing and revocation.
+- [x] Sprint 5.7.1D: explicit Reader/Reviewer sharing, expiry, revocation and read-only evidence.
 - [ ] Implement production email/identity-provider password reset.
 - [ ] Add MFA/enterprise SSO roadmap implementation.
 - [ ] Add production database, concurrency and observability.

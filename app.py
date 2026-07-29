@@ -14,13 +14,14 @@ from ui.authentication import (
     show_forced_password_change,
     show_sidebar_footer,
 )
-from ui.brand_components import page_header_html, sidebar_brand_html
+from ui.brand_components import sidebar_brand_html
 from ui.candidate_database import show_candidate_database
 from ui.configuration_management import show_configuration_management
 from ui.home import show_home
 from ui.navigation import apply_queued_page, render_workflow_navigation
 from ui.results import show as show_results
 from ui.resume_screening import show_resume_screening
+from ui.shared_records import show_shared_records
 from ui.theme import apply_alten_theme
 
 st.set_page_config(
@@ -71,18 +72,7 @@ elif page == "Administration":
 elif page == "Configuration":
     show_configuration_management(security_context)
 elif page == "Shared Records":
-    st.markdown(
-        page_header_html(
-            title="Shared records",
-            eyebrow="Reader workspace",
-            description=(
-                "Only projects explicitly shared with this account will appear here. "
-                "Controlled sharing is delivered in Sprint 5.7.1D."
-            ),
-        ),
-        unsafe_allow_html=True,
-    )
-    st.info("No shared record is available yet.")
+    show_shared_records(security_context)
 else:
     st.error("The selected page is not available.")
 

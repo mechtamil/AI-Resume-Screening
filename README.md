@@ -4,7 +4,7 @@ RecruitOS is ALTEN's configuration-driven AI Resume Screening and Recruitment Pl
 
 ## Current version
 
-`0.7.5` — Sprint `5.7.1C-R1: Universal Intake Templates & Guided Workspace UX`
+`0.7.7` — Sprint `5.7.1D: Explicit Reader Sharing & Review Assignment`
 
 ## Current capabilities
 
@@ -22,6 +22,8 @@ RecruitOS is ALTEN's configuration-driven AI Resume Screening and Recruitment Pl
 - tenant/user/workspace-isolated uploads, temporary files and reports
 - configuration snapshot provenance for every screening
 - guided page-to-page workflow navigation and action-oriented home dashboard
+- explicit Reader/Reviewer project sharing with expiry, revocation and audit history
+- read-only Shared Records evidence workspace with reviewer-progress tracking
 - repository policy, clean source-release builder and CI quality gate
 
 ## Setup
@@ -70,6 +72,7 @@ The system default is `Master_Data/RecruitOS_Configuration.xlsx`. Authorized adm
 - `docs/SPRINT_5.7.1B_R1_REPOSITORY_REBASELINE.md`
 - `docs/SPRINT_5.7.1C_TENANT_CONFIGURATION.md`
 - `docs/SPRINT_5.7.1C_R1_UNIVERSAL_INTAKE_GUIDED_UX.md`
+- `docs/SPRINT_5.7.1D_EXPLICIT_READER_SHARING.md`
 - `docs/AI_REFERENCE_ADOPTION.md`
 
 ## Repository and release gate
@@ -88,4 +91,4 @@ Build a source-only package only after Git is clean:
 python -m tools.build_clean_release
 ```
 
-RecruitOS still requires explicit Reader sharing and production database/object-storage hardening before a global v1.0 release.
+RecruitOS now implements explicit Reader/Reviewer sharing. Privacy retention, managed database/object-storage concurrency and production security acceptance remain required before global v1.0.

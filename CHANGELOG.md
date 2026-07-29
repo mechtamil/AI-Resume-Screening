@@ -1,5 +1,38 @@
 # RecruitOS Changelog
 
+## 0.7.7 — Sprint 5.7.1D Explicit Reader Sharing & Review Assignment
+
+### Added
+- Schema version 6 with explicit `record_shares` assignments and owner/recipient indexes.
+- Reader and Reviewer project assignments with optional expiry and owner notes.
+- Read-only Shared Records workspace for persisted ranking evidence.
+- Reviewer progress metadata separated from immutable candidate evidence.
+- Owner-side grant, sharing-history and immediate revocation controls.
+- Sharing audit events for grant, review, expiry and revocation.
+- Cross-user allowance, denial, session-boundary, expiry and revocation tests.
+
+### Changed
+- Application version increased to `0.7.7`.
+- Standard Users can receive explicit Shared Records access while retaining private-by-default ownership.
+- Candidate Database now manages access only for projects owned by the authenticated user.
+
+### Security
+- Existing owner-scoped repositories remain unchanged and cannot be bypassed by a numeric ID.
+- Shared session loading requires an active, unexpired assignment for the current recipient.
+- Shared evidence disables export, deletion, re-screening and raw-resume-text exposure.
+- Non-global sharing is restricted to the actor's Country/Location scope.
+
+## 0.7.6 — Sprint 5.7.1C-R2 Accessibility, Brand Governance & Portable OCR Runtime
+
+### Added
+- Environment/Streamlit-secret Tesseract executable discovery with operating-system PATH fallback.
+- Final accessibility override layer for mode-safe controls, tabs, uploads and file removal.
+- ALTEN UI governance documentation and interaction-visibility acceptance tests.
+
+### Changed
+- Application version increased to `0.7.6`.
+- Light/dark control contrast, sidebar actions and uploaded-file removal visibility were corrected.
+
 ## 0.7.5 — Sprint 5.7.1C-R1 Universal Intake Templates & Guided Workspace UX
 
 ### Added

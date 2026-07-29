@@ -1,4 +1,4 @@
-# RecruitOS Codebase Map — Version 0.7.5
+# RecruitOS Codebase Map — Version 0.7.7
 
 ## Entry and UI
 
@@ -12,7 +12,8 @@
 | `ui/home.py` | Private activity metrics and direct operational actions |
 | `ui/resume_screening.py` | Multi-format intake, template downloads and authorized screening workflow |
 | `ui/results.py` | Ranked result view and Excel export |
-| `ui/candidate_database.py` | Private projects, sessions, candidates and reopen navigation |
+| `ui/candidate_database.py` | Private projects, sessions, candidates, reopen navigation and owned-project sharing controls |
+| `ui/shared_records.py` | Recipient-only read-only evidence and Reviewer progress workspace |
 | `ui/navigation.py` | Safe queued page transitions and guided workflow footer |
 
 ## Configuration
@@ -33,10 +34,10 @@
 | `models/security_context.py` | Authenticated user/tenant/role contract |
 | `services/password_service.py` | Temporary/permanent password validation, generation, hashing and verification |
 | `services/auth_service.py` | Owner bootstrap, User ID authentication, session resolution, password reset/change and logout |
-| `services/authorization_service.py` | Five-role permission policy and target-management boundaries |
+| `services/authorization_service.py` | Five-role permission policy, sharing permissions and target-management boundaries |
 | `services/user_management_service.py` | Single/bulk provisioning, access exports, credential reset, role/status operations |
 | `database/user_repository.py` | Identity, role, session, audit, import and reset persistence |
-| `database/database.py` | SQLite connection and schema migrations through version 4 |
+| `database/database.py` | SQLite connection and schema migrations through version 6 |
 | `tools/claim_legacy_data.py` | Explicit transfer of protected legacy records to a User ID |
 
 ## Screening and persistence
@@ -45,6 +46,8 @@
 |---|---|
 | `services/processing_service.py` | End-to-end JD/resume processing and ranking orchestration |
 | `services/persistence_service.py` | Save/reopen/list/delete private screening sessions |
+| `services/sharing_service.py` | Grant/revoke/list shared access, reconstruct authorized read-only sessions and reviewer progress |
+| `database/sharing_repository.py` | Schema-6 share assignments, expiry, recipient/session authorization and sharing audit |
 | `database/project_repository.py` | Owner-scoped projects |
 | `database/screening_repository.py` | Owner-scoped sessions and match results |
 | `database/candidate_repository.py` | Owner-scoped candidates |
@@ -120,3 +123,14 @@ Reopen-time configuration provenance contract.
 | `tests/test_input_template_service.py` | Excel template structure and validation contract |
 | `tests/test_skill_list_service_formats.py` | Mandatory/Preferred list behavior |
 | `tests/test_guided_ui_contract.py` | Home/sidebar/template/next-action UI source contract |
+
+## Sprint 5.7.1D additions
+
+| File | Responsibility |
+|---|---|
+| `database/sharing_repository.py` | Owner grants, recipient authorization, expiry, revocation, review progress and audit persistence |
+| `services/sharing_service.py` | RBAC, Country/Location recipient scope and safe shared-session reconstruction |
+| `ui/shared_records.py` | Read-only Reader/Reviewer evidence workspace without export or deletion |
+| `tests/test_sharing_service.py` | Private-default, explicit allowance, denial, expiry, revocation and session-boundary tests |
+| `tests/test_shared_records_ui.py` | Static read-only UI and routing contracts |
+

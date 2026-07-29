@@ -91,14 +91,14 @@ TENANT_ADMIN
 USER
   -> operates only on own private screening data
 READER
-  -> reads only records explicitly shared in a future sharing table
+  -> reads only records authorized by an active `record_shares` assignment
 ```
 
 Administrative roles do not inherit unrestricted access to private candidate content.
 
 ## 5. Database schema lifecycle
 
-Schema version `5` includes the schema-4 identity/RBAC model and adds:
+Schema version `6` includes tenant configuration provenance plus explicit sharing and review assignments:
 
 - `tenant_configuration_versions`
 - immutable version number and workbook fingerprint
@@ -107,8 +107,12 @@ Schema version `5` includes the schema-4 identity/RBAC model and adds:
 - screening-session `configuration_sha256`
 - screening-session `configuration_snapshot_json`
 - configuration view/manage permissions
+- `record_shares` owner, recipient, project, role, expiry and revocation metadata
+- Reviewer assignment status and notes separated from screening evidence
+- partial unique index preventing duplicate active project/recipient assignments
+- `SHARED_RECORDS_READ` and `SHARED_RECORDS_MANAGE_OWN` permissions
 
-Existing schema-3 and schema-4 databases migrate forward idempotently. Historical screening sessions remain readable; new sessions carry exact configuration provenance.
+Existing schema-3 through schema-5 databases migrate forward idempotently. Historical screening sessions remain readable; new sessions carry exact configuration provenance.
 
 ## 6. Private persistence scope
 
@@ -208,7 +212,7 @@ active Streamlit screening workflow.
 
 ## 12. Current deployment boundary
 
-Authentication, database ownership, filesystem ownership, clean repository policy and tenant configuration isolation are implemented. Controlled Reader sharing, retention, managed database/object storage, concurrency hardening and AI governance remain required before a global internet-facing v1.0 release.
+Authentication, database ownership, filesystem ownership, clean repository policy and tenant configuration isolation are implemented. Retention, managed database/object storage, concurrency hardening and AI governance remain required before a global internet-facing v1.0 release.
 ## 13. Repository and release architecture
 
 ```text
@@ -253,3 +257,23 @@ ExtractionService -> JDParser / ResumeParser
 `InputTemplateService` creates the JD and supplemental-skill Excel templates in memory. `SkillListService` preserves Mandatory and Preferred classification. `ui/navigation.py` queues authorized page transitions before the sidebar radio widget is rendered, avoiding unsafe same-run widget-state mutation.
 
 The sidebar contains one identity card, appearance control and a bottom sign-out action. Theme selection is browser-session-local and does not alter tenant business configuration.
+
+## 15. Explicit sharing architecture
+
+```text
+Owner Candidate Database
+        |
+        v
+SharingService -> SharingRepository -> record_shares + audit_events
+        |                                      |
+        | active recipient/project/session     | grant/review/expiry/revoke
+        v                                      v
+Shared Records UI -> read-only PersistenceService reconstruction
+```
+
+`ProjectRepository`, `ScreeningRepository` and `CandidateRepository` remain owner scoped.
+`SharingRepository` is the only cross-user authorization boundary. It first validates an
+active, unexpired assignment, then reconstructs the selected owner session through an
+internal owner scope. The returned shared payload removes storage metadata and raw resume
+text. Reviewer progress writes only to assignment metadata and never to screening evidence.
+

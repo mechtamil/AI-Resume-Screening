@@ -10,6 +10,8 @@ from services.authorization_service import (
     SYSTEM_OWNER,
     TENANT_ADMIN,
     USER,
+    PERMISSION_SHARED_MANAGE_OWN,
+    PERMISSION_SHARED_READ,
     AuthorizationService,
 )
 
@@ -36,9 +38,31 @@ class AuthorizationServiceTests(unittest.TestCase):
         self.assertIn("Configuration", AuthorizationService.pages_for_context(context(GLOBAL_ADMIN)))
         self.assertIn("Configuration", AuthorizationService.pages_for_context(context(TENANT_ADMIN)))
         self.assertIn("Configuration", AuthorizationService.pages_for_context(context(USER)))
+        self.assertIn("Shared Records", AuthorizationService.pages_for_context(context(USER)))
         self.assertEqual(
             AuthorizationService.pages_for_context(context(READER)),
             ["Home", "Shared Records"],
+        )
+
+
+    def test_sharing_permissions_keep_reader_read_only(self):
+        self.assertTrue(
+            AuthorizationService.has_permission(context(USER), PERMISSION_SHARED_READ)
+        )
+        self.assertTrue(
+            AuthorizationService.has_permission(
+                context(USER),
+                PERMISSION_SHARED_MANAGE_OWN,
+            )
+        )
+        self.assertTrue(
+            AuthorizationService.has_permission(context(READER), PERMISSION_SHARED_READ)
+        )
+        self.assertFalse(
+            AuthorizationService.has_permission(
+                context(READER),
+                PERMISSION_SHARED_MANAGE_OWN,
+            )
         )
 
     def test_assignable_roles_follow_privilege_boundaries(self):
