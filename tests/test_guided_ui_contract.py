@@ -15,8 +15,17 @@ class GuidedUiContractTests(unittest.TestCase):
         ast.parse(source)
         self.assertIn("Download Job Description Excel Template", source)
         self.assertIn("Download Supplemental Skill List Template", source)
-        self.assertIn("View Ranked Results", source)
         self.assertIn("SUPPORTED_JD_TYPES", source)
+
+    def test_screening_uses_single_results_navigation_path(self):
+        source = (ROOT / "ui" / "resume_screening.py").read_text(encoding="utf-8")
+        app_source = (ROOT / "app.py").read_text(encoding="utf-8")
+        ast.parse(source)
+        ast.parse(app_source)
+        self.assertNotIn("View Ranked Results", source)
+        self.assertNotIn('key="screening_view_results"', source)
+        self.assertIn("Use the Results action below", source)
+        self.assertIn("render_workflow_navigation(", app_source)
 
     def test_sidebar_has_one_profile_card_dark_mode_and_bottom_signout_key(self):
         auth_source = (ROOT / "ui" / "authentication.py").read_text(encoding="utf-8")

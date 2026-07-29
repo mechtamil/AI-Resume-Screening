@@ -18,7 +18,6 @@ from services.persistence_service import PersistenceService
 from services.processing_service import ProcessingService
 from services.upload_service import UploadService
 from ui.brand_components import page_header_html, workflow_stepper_html
-from ui.navigation import queue_page
 
 
 def _uploader_types(values: tuple[str, ...]) -> list[str]:
@@ -246,13 +245,10 @@ def show_resume_screening(context: SecurityContext) -> None:
                     for error in result["errors"]:
                         st.error(f"{error['file']}: {error['error']}")
 
-            if st.button(
-                "View Ranked Results →",
-                key="screening_view_results",
-                type="primary",
-                use_container_width=True,
-            ):
-                queue_page("Results")
+            st.info(
+                "Screening is complete. Use the Results action below to review ranked "
+                "candidates and export the secure report."
+            )
         except Exception as exc:
             if not persisted:
                 UploadService.delete_workspace(context, scope)

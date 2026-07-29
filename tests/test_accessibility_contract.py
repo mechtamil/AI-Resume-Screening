@@ -47,6 +47,23 @@ class AccessibilityContractTests(unittest.TestCase):
         self.assertIn("color: #043962 !important", css)
         self.assertIn("color: #FFFFFF !important", css)
 
+    def test_uploaded_file_remove_action_uses_visible_red_x(self) -> None:
+        css = build_accessibility_css()
+        self.assertIn('button[data-testid="stFileUploaderDeleteBtn"]', css)
+        self.assertIn('button[aria-label^="Remove "]', css)
+        self.assertIn('content: "X" !important;', css)
+        self.assertIn('border: 2px solid #E30513 !important;', css)
+        self.assertIn('background: #FFFFFF !important;', css)
+        self.assertIn('color: #E30513 !important;', css)
+        self.assertIn('visibility: hidden !important;', css)
+        self.assertIn('visibility: visible !important;', css)
+        self.assertIn('background: #FFF1F2 !important;', css)
+        self.assertIn('border-color: #C90010 !important;', css)
+        self.assertIn(
+            'outline: 3px solid rgba(227, 5, 19, .34) !important;',
+            css,
+        )
+
     def test_expander_header_uses_mode_aware_surface_and_text(self) -> None:
         css = build_accessibility_css()
         self.assertIn('[data-testid="stExpander"] summary', css)
@@ -57,9 +74,12 @@ class AccessibilityContractTests(unittest.TestCase):
         css = build_accessibility_css()
         self.assertIn('[data-testid="stTabs"] [role="tablist"]', css)
         self.assertIn("border-radius: 18px !important", css)
-        self.assertIn('button[role="tab"][aria-selected="true"]', css)
+        self.assertIn('[role="tab"][aria-selected="true"]', css)
+        self.assertIn('[role="tab"][aria-selected="false"]', css)
+        self.assertIn("background-color: #0070C0 !important", css)
+        self.assertIn("color: #FFFFFF !important", css)
         self.assertIn("color: var(--ros-text) !important", css)
-        self.assertIn("inset 0 -3px 0 var(--alten-yellow)", css)
+        self.assertIn("inset 0 -3px 0 #FFED00", css)
 
     def test_form_placeholders_and_list_options_follow_mode_tokens(self) -> None:
         css = build_accessibility_css()
@@ -71,9 +91,9 @@ class AccessibilityContractTests(unittest.TestCase):
     def test_sidebar_caption_and_navigation_are_explicitly_readable(self) -> None:
         css = build_accessibility_css()
         self.assertIn('[data-testid="stCaptionContainer"]', css)
-        self.assertIn('color: rgba(255, 255, 255, .76) !important', css)
+        self.assertIn("color: rgba(255, 255, 255, .76) !important", css)
         self.assertIn('[data-testid="stRadio"] label *', css)
-        self.assertIn('color: rgba(255, 255, 255, .94) !important', css)
+        self.assertIn("color: rgba(255, 255, 255, .94) !important", css)
 
     def test_signout_has_blue_background_and_white_nested_text(self) -> None:
         css = build_accessibility_css()
@@ -101,6 +121,14 @@ class AccessibilityContractTests(unittest.TestCase):
         self.assertIn("upload a Job Description", source)
         self.assertIn("upload at least one candidate resume", source)
         self.assertIn('key="analyze_save_candidates"', source)
+
+    def test_duplicate_ranked_results_button_is_removed(self) -> None:
+        source = (ROOT / "ui" / "resume_screening.py").read_text(encoding="utf-8")
+        ast.parse(source)
+        self.assertNotIn("View Ranked Results", source)
+        self.assertNotIn("screening_view_results", source)
+        self.assertNotIn("from ui.navigation import queue_page", source)
+        self.assertIn("Use the Results action below", source)
 
 
 if __name__ == "__main__":

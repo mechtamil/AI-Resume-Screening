@@ -191,6 +191,92 @@ def build_accessibility_css() -> str:
   font-weight: inherit !important;
 }
 
+/* Uploaded-file remove action.
+
+   Streamlit versions differ here: some attach stFileUploaderDeleteBtn directly
+   to the button, while others expose it on a wrapper around the button. The
+   aria-label fallback is limited to file uploaders and preserves the accessible
+   "Remove <filename>" name. */
+.stApp [data-testid="stFileUploader"] button[data-testid="stFileUploaderDeleteBtn"],
+.stApp [data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] > button,
+.stApp [data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] button,
+.stApp [data-testid="stFileUploader"] button[aria-label^="Remove "] {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  padding: 0 !important;
+  border: 2px solid #E30513 !important;
+  border-radius: 12px !important;
+  background: #FFFFFF !important;
+  color: #E30513 !important;
+  opacity: 1 !important;
+  box-shadow: 0 8px 18px rgba(227, 5, 19, .18) !important;
+  overflow: hidden !important;
+}
+
+/* Hide Streamlit's native icon but keep the button and aria-label intact. */
+.stApp [data-testid="stFileUploader"] button[data-testid="stFileUploaderDeleteBtn"] > *,
+.stApp [data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] > button > *,
+.stApp [data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] button > *,
+.stApp [data-testid="stFileUploader"] button[aria-label^="Remove "] > * {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Render a reliable red X on the actual clickable button. */
+.stApp [data-testid="stFileUploader"] button[data-testid="stFileUploaderDeleteBtn"]::after,
+.stApp [data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] > button::after,
+.stApp [data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] button::after,
+.stApp [data-testid="stFileUploader"] button[aria-label^="Remove "]::after {
+  content: "X" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  color: #E30513 !important;
+  font-family: Arial, "Segoe UI", sans-serif !important;
+  font-size: 1.15rem !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: none !important;
+}
+
+.stApp [data-testid="stFileUploader"] button[data-testid="stFileUploaderDeleteBtn"]:hover,
+.stApp [data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] > button:hover,
+.stApp [data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] button:hover,
+.stApp [data-testid="stFileUploader"] button[aria-label^="Remove "]:hover {
+  background: #FFF1F2 !important;
+  border-color: #C90010 !important;
+  color: #C90010 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 10px 22px rgba(227, 5, 19, .26) !important;
+}
+
+.stApp [data-testid="stFileUploader"] button[data-testid="stFileUploaderDeleteBtn"]:hover::after,
+.stApp [data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] > button:hover::after,
+.stApp [data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] button:hover::after,
+.stApp [data-testid="stFileUploader"] button[aria-label^="Remove "]:hover::after {
+  color: #C90010 !important;
+}
+
+.stApp [data-testid="stFileUploader"] button[data-testid="stFileUploaderDeleteBtn"]:focus-visible,
+.stApp [data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] > button:focus-visible,
+.stApp [data-testid="stFileUploader"] [data-testid="stFileUploaderDeleteBtn"] button:focus-visible,
+.stApp [data-testid="stFileUploader"] button[aria-label^="Remove "]:focus-visible {
+  outline: 3px solid rgba(227, 5, 19, .34) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 5px rgba(227, 5, 19, .30) !important;
+}
+
 /* -------------------------------------------------------------------------
    Expanders — mode-aware surface and readable header text/icons
    ------------------------------------------------------------------------- */
@@ -281,6 +367,46 @@ def build_accessibility_css() -> str:
 .stApp .stTabs [aria-selected="true"] *,
 .stApp [data-testid="stTabs"] [aria-selected="true"] * {
   color: #FFFFFF !important;
+  opacity: 1 !important;
+}
+
+/* Streamlit/BaseWeb compatibility: selected state can be rendered outside
+   the historical .stTabs wrapper. Keep this selector broad but role-specific. */
+.stApp [role="tab"][aria-selected="true"],
+.stApp [data-baseweb="tab"][aria-selected="true"] {
+  background-color: #0070C0 !important;
+  background-image: linear-gradient(
+    112deg,
+    #043962,
+    #0070C0 58%,
+    #008BD2
+  ) !important;
+  color: #FFFFFF !important;
+  border-color: transparent !important;
+  opacity: 1 !important;
+  box-shadow:
+    0 10px 24px rgba(0, 112, 192, .26),
+    inset 0 -3px 0 #FFED00 !important;
+}
+
+.stApp [role="tab"][aria-selected="true"] *,
+.stApp [data-baseweb="tab"][aria-selected="true"] * {
+  color: #FFFFFF !important;
+  fill: currentColor !important;
+  opacity: 1 !important;
+  font-weight: 750 !important;
+}
+
+.stApp [role="tab"][aria-selected="false"],
+.stApp [data-baseweb="tab"][aria-selected="false"] {
+  color: var(--ros-text) !important;
+  background-color: rgba(0, 139, 210, .06) !important;
+  opacity: 1 !important;
+}
+
+.stApp [role="tab"][aria-selected="false"] *,
+.stApp [data-baseweb="tab"][aria-selected="false"] * {
+  color: var(--ros-text) !important;
   opacity: 1 !important;
 }
 
