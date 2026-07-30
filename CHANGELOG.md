@@ -1,5 +1,27 @@
 # RecruitOS Changelog
 
+## 0.7.8 — Sprint 5.7.2A AI Provider Gateway & Model Registry
+
+### Added
+- Schema version 7 with AI model registry, immutable prompt versions, tenant/user task policies and inference telemetry.
+- Provider-neutral gateway with built-in OpenAI Responses and local Ollama adapters.
+- Strict dependency-free structured-output validation before downstream use.
+- Tenant policy controls for task enablement, model/prompt assignment, hosted-data transfer, input size, timeout and daily limits.
+- Configuration workspace for provider readiness, model and prompt administration, policy assignment and content-free telemetry.
+- Automated provider-envelope, policy, RBAC, isolation, migration, telemetry and UI-contract tests.
+
+### Security
+- Provider credentials are resolved only from deployment environment variables or Streamlit secrets.
+- Hosted AI transfer is denied unless explicitly approved in the task policy.
+- Prompt text, candidate text, response content and credentials are excluded from telemetry and audit details.
+- Errors are redacted and response bodies are size-limited.
+
+### Changed
+- Application version increased to `0.7.8`.
+- Database schema increased from 6 to 7.
+- Configuration now includes a separate AI Provider & Model Policy workspace.
+- Resume Screening and deterministic scoring remain AI-independent in this foundation sprint.
+
 ## 0.7.7 — Sprint 5.7.1D Explicit Reader Sharing & Review Assignment
 
 ### Added

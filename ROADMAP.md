@@ -2,9 +2,9 @@
 
 ## Current baseline
 
-- **Version:** `0.7.7`
-- **Completed sprint:** `5.7.1D — Explicit Reader Sharing & Review Assignment`
-- **Database schema:** `6`
+- **Version:** `0.7.8`
+- **Completed sprint:** `5.7.2A — AI Provider Gateway & Model Registry`
+- **Database schema:** `7`
 - **Deployment target:** Streamlit development environment
 
 ## Completed platform foundation
@@ -20,28 +20,23 @@
 - `5.7.1C-R1` — multi-format intake, OCR, Excel templates, guided navigation and sidebar/home UX
 - `5.7.1C-R2` — accessible navigation/disabled states, mandatory ALTEN UI governance and deployment-configured OCR discovery
 - `5.7.1D` — explicit Reader/Reviewer sharing, expiry, revocation, read-only evidence and audit trail
+- `5.7.2A` — provider abstraction, model/prompt registry, tenant AI policy, structured validation and safe telemetry
 
 ## Next platform sprint
 
-### 5.7.2A — AI Provider Gateway & Model Registry
-
-- local/hosted provider abstraction
-- tenant model policy
-- secret-safe provider configuration
-- structured-output validation
-- latency/cost/error telemetry
-- model and prompt version registry
-
-## AI-powered screening milestone
-
-The deterministic matching engine remains authoritative and traceable. AI adds structured evidence, semantic retrieval and recruiter assistance; it does not silently replace mandatory rules or auto-reject candidates.
-
 ### 5.7.2B — AI Structured Resume/JD Extraction
+
 - section-specific extraction schemas
 - evidence and source-section mapping
 - deterministic/AI conflict detection
 - multilingual-ready text handling
 - confidence and human correction workflow
+
+## AI-powered screening milestone
+
+The deterministic matching engine remains authoritative and traceable. AI adds structured evidence, semantic retrieval and recruiter assistance; it does not silently replace mandatory rules or auto-reject candidates.
+
+After the next `5.7.2B` extraction sprint, the milestone continues with:
 
 ### 5.7.2C — Embeddings & Hybrid Retrieval
 - tenant-isolated vector indexes
@@ -88,4 +83,4 @@ The deterministic matching engine remains authoritative and traceable. AI adds s
 
 ## Current estimate
 
-After acceptance of `5.7.1D`, **10 focused sprints** remain in the expanded platform + AI v1.0 scope. Scope changes require an explicit roadmap update.
+After acceptance of `5.7.2A`, **9 focused sprints** remain in the expanded platform + AI v1.0 scope. Scope changes require an explicit roadmap update.

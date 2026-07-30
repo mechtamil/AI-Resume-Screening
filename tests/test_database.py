@@ -39,6 +39,10 @@ class DatabaseTests(unittest.TestCase):
                     "user_import_jobs",
                     "tenant_configuration_versions",
                     "record_shares",
+                    "ai_model_registry",
+                    "ai_prompt_versions",
+                    "tenant_ai_policies",
+                    "ai_inference_events",
                 }.issubset(names)
             )
             self.assertEqual(db.get_schema_version(), Database.SCHEMA_VERSION)
@@ -106,6 +110,8 @@ class DatabaseTests(unittest.TestCase):
             }
             self.assertIn("SHARED_RECORDS_READ", user_permissions)
             self.assertIn("SHARED_RECORDS_MANAGE_OWN", user_permissions)
+            self.assertIn("AI_POLICY_VIEW", user_permissions)
+            self.assertIn("AI_INFERENCE_RUN", user_permissions)
             db.close()
 
     def test_schema_five_database_migrates_to_explicit_sharing(self):
@@ -129,9 +135,43 @@ class DatabaseTests(unittest.TestCase):
 
             upgraded = Database(path)
             upgraded.create_tables()
-            self.assertEqual(upgraded.get_schema_version(), 6)
+            self.assertEqual(upgraded.get_schema_version(), 7)
             self.assertTrue(upgraded.table_exists("record_shares"))
             self.assertTrue(upgraded.table_exists("tenant_configuration_versions"))
+            self.assertTrue(upgraded.table_exists("ai_model_registry"))
+            upgraded.close()
+
+    def test_schema_six_database_migrates_to_ai_gateway_registry(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "schema6.db"
+            db = Database(path)
+            db._create_migration_table()
+            db._migration_1_create_core_tables()
+            db._record_migration(1)
+            db._migration_2_add_persistence_contracts()
+            db._record_migration(2)
+            db._migration_3_add_multi_user_security()
+            db._record_migration(3)
+            db._migration_4_add_admin_provisioning_rbac()
+            db._record_migration(4)
+            db._migration_5_add_tenant_configuration_versions()
+            db._record_migration(5)
+            db._migration_6_add_explicit_record_sharing()
+            db._record_migration(6)
+            db.connection.commit()
+            self.assertEqual(db.get_schema_version(), 6)
+            db.close()
+
+            upgraded = Database(path)
+            upgraded.create_tables()
+            self.assertEqual(upgraded.get_schema_version(), 7)
+            for table in (
+                "ai_model_registry",
+                "ai_prompt_versions",
+                "tenant_ai_policies",
+                "ai_inference_events",
+            ):
+                self.assertTrue(upgraded.table_exists(table))
             upgraded.close()
 
     def test_schema_three_user_is_upgraded_to_system_owner(self):
@@ -182,7 +222,7 @@ class DatabaseTests(unittest.TestCase):
                 FROM users WHERE user_key = 'schema3-user'
                 """
             ).fetchone()
-            self.assertEqual(upgraded.get_schema_version(), 6)
+            self.assertEqual(upgraded.get_schema_version(), 7)
             self.assertEqual(row["role_code"], "SYSTEM_OWNER")
             self.assertEqual(row["account_status"], "ACTIVE")
             self.assertTrue(str(row["employee_user_id"]).startswith("U"))

@@ -277,3 +277,27 @@ active, unexpired assignment, then reconstructs the selected owner session throu
 internal owner scope. The returned shared payload removes storage metadata and raw resume
 text. Reviewer progress writes only to assignment metadata and never to screening evidence.
 
+## 16. AI provider gateway and registry architecture
+
+```text
+Deployment environment / Streamlit secrets
+  - OpenAI API key and endpoint
+  - Ollama endpoint
+                 |
+                 v
+AIProviderGateway
+  +--> AuthorizationService: AI_INFERENCE_RUN
+  +--> tenant_ai_policies: explicit task enablement and transfer approval
+  +--> ai_model_registry: approved provider/model/cost/capability metadata
+  +--> ai_prompt_versions: immutable prompt + JSON schema
+  +--> OpenAIResponsesProvider or OllamaProvider
+  +--> structured-output validation
+  +--> ai_inference_events: metadata only
+```
+
+`AIProviderGateway` never reads a model or prompt directly from a page request. It resolves the authenticated user's active policy, renders only registered templates, enforces input and daily limits, blocks unapproved hosted transfer and validates JSON before returning a payload.
+
+The database stores provider codes and approved model identifiers, but never API keys. Telemetry excludes system/user prompts, candidate text, response content and raw provider envelopes. Error messages are redacted before persistence.
+
+Sprint `5.7.2A` is a governance and transport boundary only. `ProcessingService`, deterministic matchers and scoring do not invoke AI until Sprint `5.7.2B` or later explicitly integrates an approved task.
+

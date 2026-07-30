@@ -31,7 +31,7 @@
 
 ## P2 — AI-powered screening foundation
 
-- [ ] Sprint 5.7.2A: AI provider gateway and model registry.
+- [x] Sprint 5.7.2A: AI provider gateway and model registry.
 - [ ] Sprint 5.7.2B: schema-validated AI resume/JD extraction with evidence.
 - [ ] Sprint 5.7.2C: tenant-isolated embeddings and hybrid retrieval.
 - [ ] Sprint 5.7.2D: explainable AI screening and human review.

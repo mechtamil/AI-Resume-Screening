@@ -13,7 +13,7 @@ from config.paths import DATABASE_PATH
 class Database:
     """Own a SQLite connection and apply idempotent schema migrations."""
 
-    SCHEMA_VERSION = 6
+    SCHEMA_VERSION = 7
     LEGACY_TENANT_KEY = "legacy-imported-data"
     LEGACY_USER_KEY = "legacy-imported-user"
     LEGACY_USER_EMAIL = "legacy-imported@recruitos.local"
@@ -56,6 +56,10 @@ class Database:
         if current_version < 6:
             self._migration_6_add_explicit_record_sharing()
             self._record_migration(6)
+
+        if current_version < 7:
+            self._migration_7_add_ai_provider_gateway()
+            self._record_migration(7)
 
         self.connection.commit()
 
@@ -909,6 +913,199 @@ class Database:
             "TENANT_ADMIN": {"SHARED_RECORDS_READ", "SHARED_RECORDS_MANAGE_OWN"},
             "USER": {"SHARED_RECORDS_READ", "SHARED_RECORDS_MANAGE_OWN"},
             "READER": {"SHARED_RECORDS_READ"},
+        }
+        for role_code, permission_codes in role_permissions.items():
+            role_row = self.connection.execute(
+                "SELECT id FROM roles WHERE role_code = ?",
+                (role_code,),
+            ).fetchone()
+            if not role_row:
+                continue
+            for permission_code in permission_codes:
+                permission_row = self.connection.execute(
+                    "SELECT id FROM permissions WHERE permission_code = ?",
+                    (permission_code,),
+                ).fetchone()
+                if permission_row:
+                    self.connection.execute(
+                        "INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)",
+                        (int(role_row["id"]), int(permission_row["id"])),
+                    )
+
+    def _migration_7_add_ai_provider_gateway(self) -> None:
+        """Add provider/model/prompt registry, tenant policy, and safe telemetry."""
+        self._migration_6_add_explicit_record_sharing()
+        self.connection.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS ai_model_registry (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                model_key TEXT NOT NULL UNIQUE,
+                provider_code TEXT NOT NULL,
+                model_name TEXT NOT NULL,
+                display_name TEXT NOT NULL DEFAULT '',
+                deployment_type TEXT NOT NULL,
+                supports_structured_output INTEGER NOT NULL DEFAULT 1,
+                input_cost_per_million_usd REAL NOT NULL DEFAULT 0,
+                output_cost_per_million_usd REAL NOT NULL DEFAULT 0,
+                context_window INTEGER NOT NULL DEFAULT 0,
+                max_output_tokens INTEGER NOT NULL DEFAULT 0,
+                status TEXT NOT NULL DEFAULT 'ACTIVE',
+                created_by_user_id INTEGER NOT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE RESTRICT,
+                CHECK (provider_code IN ('OPENAI', 'OLLAMA')),
+                CHECK (deployment_type IN ('HOSTED', 'LOCAL')),
+                CHECK (status IN ('ACTIVE', 'INACTIVE')),
+                CHECK (input_cost_per_million_usd >= 0),
+                CHECK (output_cost_per_million_usd >= 0),
+                CHECK (context_window >= 0),
+                CHECK (max_output_tokens >= 0)
+            );
+
+            CREATE TABLE IF NOT EXISTS ai_prompt_versions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                prompt_key TEXT NOT NULL,
+                task_code TEXT NOT NULL,
+                version_number INTEGER NOT NULL,
+                system_template TEXT NOT NULL DEFAULT '',
+                user_template TEXT NOT NULL,
+                output_schema_json TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'DRAFT',
+                created_by_user_id INTEGER NOT NULL,
+                created_at TEXT NOT NULL,
+                activated_by_user_id INTEGER,
+                activated_at TEXT NOT NULL DEFAULT '',
+                FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE RESTRICT,
+                FOREIGN KEY (activated_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+                UNIQUE (prompt_key, version_number),
+                CHECK (status IN ('DRAFT', 'ACTIVE', 'INACTIVE')),
+                CHECK (version_number > 0)
+            );
+
+            CREATE TABLE IF NOT EXISTS tenant_ai_policies (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tenant_id INTEGER NOT NULL,
+                target_user_id INTEGER NOT NULL,
+                task_code TEXT NOT NULL,
+                enabled INTEGER NOT NULL DEFAULT 0,
+                model_id INTEGER NOT NULL,
+                prompt_version_id INTEGER NOT NULL,
+                allow_external_data INTEGER NOT NULL DEFAULT 0,
+                max_input_chars INTEGER NOT NULL DEFAULT 120000,
+                timeout_seconds INTEGER NOT NULL DEFAULT 60,
+                daily_request_limit INTEGER NOT NULL DEFAULT 100,
+                created_by_user_id INTEGER NOT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+                FOREIGN KEY (target_user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (model_id) REFERENCES ai_model_registry(id) ON DELETE RESTRICT,
+                FOREIGN KEY (prompt_version_id) REFERENCES ai_prompt_versions(id) ON DELETE RESTRICT,
+                FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE RESTRICT,
+                UNIQUE (tenant_id, target_user_id, task_code),
+                CHECK (enabled IN (0, 1)),
+                CHECK (allow_external_data IN (0, 1)),
+                CHECK (max_input_chars >= 1000),
+                CHECK (timeout_seconds BETWEEN 5 AND 600),
+                CHECK (daily_request_limit >= 1)
+            );
+
+            CREATE TABLE IF NOT EXISTS ai_inference_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tenant_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                task_code TEXT NOT NULL,
+                provider_code TEXT NOT NULL DEFAULT '',
+                model_id INTEGER,
+                model_key TEXT NOT NULL DEFAULT '',
+                prompt_version_id INTEGER,
+                request_id TEXT NOT NULL,
+                outcome TEXT NOT NULL,
+                latency_ms INTEGER NOT NULL DEFAULT 0,
+                input_chars INTEGER NOT NULL DEFAULT 0,
+                output_chars INTEGER NOT NULL DEFAULT 0,
+                input_tokens INTEGER NOT NULL DEFAULT 0,
+                output_tokens INTEGER NOT NULL DEFAULT 0,
+                estimated_cost_usd REAL NOT NULL DEFAULT 0,
+                error_code TEXT NOT NULL DEFAULT '',
+                error_message_redacted TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (model_id) REFERENCES ai_model_registry(id) ON DELETE SET NULL,
+                FOREIGN KEY (prompt_version_id) REFERENCES ai_prompt_versions(id) ON DELETE SET NULL,
+                CHECK (outcome IN ('SUCCESS', 'ERROR', 'DENIED')),
+                CHECK (latency_ms >= 0),
+                CHECK (input_chars >= 0),
+                CHECK (output_chars >= 0),
+                CHECK (input_tokens >= 0),
+                CHECK (output_tokens >= 0),
+                CHECK (estimated_cost_usd >= 0)
+            );
+
+            CREATE INDEX IF NOT EXISTS ix_ai_model_provider_status
+                ON ai_model_registry(provider_code, status, display_name);
+
+            CREATE INDEX IF NOT EXISTS ix_ai_prompt_task_status
+                ON ai_prompt_versions(task_code, status, prompt_key, version_number DESC);
+
+            CREATE INDEX IF NOT EXISTS ix_tenant_ai_policy_target
+                ON tenant_ai_policies(tenant_id, target_user_id, task_code);
+
+            CREATE INDEX IF NOT EXISTS ix_ai_inference_user_time
+                ON ai_inference_events(tenant_id, user_id, created_at DESC);
+
+            CREATE INDEX IF NOT EXISTS ix_ai_inference_request
+                ON ai_inference_events(request_id);
+            """
+        )
+
+        now = self._utc_now()
+        permissions = (
+            (
+                "AI_POLICY_VIEW",
+                "View assigned AI model and prompt policy",
+                "ai_policy",
+                "read",
+            ),
+            (
+                "AI_POLICY_MANAGE_GLOBAL",
+                "Manage AI models, prompts, and policies globally",
+                "ai_policy",
+                "manage_global",
+            ),
+            (
+                "AI_POLICY_MANAGE_TENANT",
+                "Manage AI policies in assigned scope",
+                "ai_policy",
+                "manage_scope",
+            ),
+            (
+                "AI_INFERENCE_RUN",
+                "Run an enabled AI task through the provider gateway",
+                "ai_inference",
+                "execute",
+            ),
+        )
+        self.connection.executemany(
+            """
+            INSERT OR IGNORE INTO permissions
+            (permission_code, permission_name, resource, action, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            [(code, name, resource, action, now) for code, name, resource, action in permissions],
+        )
+
+        role_permissions = {
+            "SYSTEM_OWNER": {item[0] for item in permissions},
+            "GLOBAL_ADMIN": {item[0] for item in permissions},
+            "TENANT_ADMIN": {
+                "AI_POLICY_VIEW",
+                "AI_POLICY_MANAGE_TENANT",
+                "AI_INFERENCE_RUN",
+            },
+            "USER": {"AI_POLICY_VIEW", "AI_INFERENCE_RUN"},
         }
         for role_code, permission_codes in role_permissions.items():
             role_row = self.connection.execute(

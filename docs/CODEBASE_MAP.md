@@ -1,4 +1,4 @@
-# RecruitOS Codebase Map — Version 0.7.7
+# RecruitOS Codebase Map — Version 0.7.8
 
 ## Entry and UI
 
@@ -37,7 +37,7 @@
 | `services/authorization_service.py` | Five-role permission policy, sharing permissions and target-management boundaries |
 | `services/user_management_service.py` | Single/bulk provisioning, access exports, credential reset, role/status operations |
 | `database/user_repository.py` | Identity, role, session, audit, import and reset persistence |
-| `database/database.py` | SQLite connection and schema migrations through version 6 |
+| `database/database.py` | SQLite connection and schema migrations through version 7 |
 | `tools/claim_legacy_data.py` | Explicit transfer of protected legacy records to a User ID |
 
 ## Screening and persistence
@@ -133,4 +133,19 @@ Reopen-time configuration provenance contract.
 | `ui/shared_records.py` | Read-only Reader/Reviewer evidence workspace without export or deletion |
 | `tests/test_sharing_service.py` | Private-default, explicit allowance, denial, expiry, revocation and session-boundary tests |
 | `tests/test_shared_records_ui.py` | Static read-only UI and routing contracts |
+
+## Sprint 5.7.2A additions
+
+| File | Responsibility |
+|---|---|
+| `models/ai_contracts.py` | Immutable provider request/response, model, prompt and policy contracts |
+| `database/ai_registry_repository.py` | Schema-7 model, prompt, tenant-policy and content-free telemetry persistence |
+| `services/ai/schema_validator.py` | Dependency-free structured JSON validation |
+| `services/ai/providers/base.py` | Provider protocol and bounded JSON HTTP transport |
+| `services/ai/providers/openai_responses.py` | OpenAI Responses structured-output adapter with `store=false` |
+| `services/ai/providers/ollama.py` | Local Ollama structured `/api/chat` adapter |
+| `services/ai_registry_service.py` | RBAC, immutable registry administration, tenant policy and telemetry views |
+| `services/ai/provider_gateway.py` | Policy resolution, prompt rendering, provider dispatch, validation, limits, cost and telemetry |
+| `ui/ai_configuration.py` | Provider readiness, registry, tenant policy and telemetry workspace |
+| `tests/test_ai_*.py` | Schema, provider, registry, policy, telemetry and UI contracts |
 

@@ -122,6 +122,39 @@ OCR_PAGE_SEGMENTATION_MODE = _environment_int(
 )
 OCR_PAGE_SEGMENTATION_MODE = min(13, OCR_PAGE_SEGMENTATION_MODE)
 
+# AI provider deployment configuration. Secrets are resolved only from the
+# process environment or Streamlit secrets and are never persisted in SQLite,
+# audit events, telemetry, exports, or source-controlled configuration.
+AI_OPENAI_API_KEY = str(
+    _deployment_value("RECRUITOS_OPENAI_API_KEY", "")
+).strip()
+AI_OPENAI_BASE_URL = str(
+    _deployment_value("RECRUITOS_OPENAI_BASE_URL", "https://api.openai.com/v1")
+).strip().rstrip("/")
+AI_OLLAMA_BASE_URL = str(
+    _deployment_value("RECRUITOS_OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+).strip().rstrip("/")
+AI_HTTP_TIMEOUT_SECONDS = _environment_int(
+    "RECRUITOS_AI_HTTP_TIMEOUT_SECONDS",
+    60,
+    minimum=5,
+)
+AI_MAX_RESPONSE_BYTES = _environment_int(
+    "RECRUITOS_AI_MAX_RESPONSE_BYTES",
+    2_000_000,
+    minimum=32_768,
+)
+AI_DEFAULT_MAX_INPUT_CHARS = _environment_int(
+    "RECRUITOS_AI_DEFAULT_MAX_INPUT_CHARS",
+    120_000,
+    minimum=1_000,
+)
+AI_DEFAULT_DAILY_REQUEST_LIMIT = _environment_int(
+    "RECRUITOS_AI_DEFAULT_DAILY_REQUEST_LIMIT",
+    100,
+    minimum=1,
+)
+
 # Public self-registration is intentionally disabled. Users are provisioned by
 # the System Owner, Global Admin, or a scope-limited Tenant Admin.
 ALLOW_SELF_REGISTRATION = False

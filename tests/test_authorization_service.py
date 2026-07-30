@@ -10,6 +10,10 @@ from services.authorization_service import (
     SYSTEM_OWNER,
     TENANT_ADMIN,
     USER,
+    PERMISSION_AI_INFERENCE_RUN,
+    PERMISSION_AI_POLICY_MANAGE_GLOBAL,
+    PERMISSION_AI_POLICY_MANAGE_TENANT,
+    PERMISSION_AI_POLICY_VIEW,
     PERMISSION_SHARED_MANAGE_OWN,
     PERMISSION_SHARED_READ,
     AuthorizationService,
@@ -63,6 +67,33 @@ class AuthorizationServiceTests(unittest.TestCase):
                 context(READER),
                 PERMISSION_SHARED_MANAGE_OWN,
             )
+        )
+
+    def test_ai_permissions_follow_policy_boundaries(self):
+        self.assertTrue(
+            AuthorizationService.has_permission(
+                context(SYSTEM_OWNER), PERMISSION_AI_POLICY_MANAGE_GLOBAL
+            )
+        )
+        self.assertTrue(
+            AuthorizationService.has_permission(
+                context(TENANT_ADMIN), PERMISSION_AI_POLICY_MANAGE_TENANT
+            )
+        )
+        self.assertTrue(
+            AuthorizationService.has_permission(context(USER), PERMISSION_AI_POLICY_VIEW)
+        )
+        self.assertTrue(
+            AuthorizationService.has_permission(context(USER), PERMISSION_AI_INFERENCE_RUN)
+        )
+        self.assertFalse(
+            AuthorizationService.has_permission(context(USER), PERMISSION_AI_POLICY_MANAGE_GLOBAL)
+        )
+        self.assertFalse(
+            AuthorizationService.has_permission(context(READER), PERMISSION_AI_POLICY_VIEW)
+        )
+        self.assertFalse(
+            AuthorizationService.has_permission(context(READER), PERMISSION_AI_INFERENCE_RUN)
         )
 
     def test_assignable_roles_follow_privilege_boundaries(self):

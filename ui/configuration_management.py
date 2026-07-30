@@ -12,10 +12,23 @@ from services.authorization_service import (
 )
 from services.tenant_configuration_service import TenantConfigurationService
 from services.user_management_service import UserManagementService
+from ui.ai_configuration import show_ai_configuration
 from ui.brand_components import page_header_html
 
 
 def show_configuration_management(context: SecurityContext) -> None:
+    """Show recruitment configuration and the AI provider-policy boundary."""
+    context.require_valid()
+    recruitment_tab, ai_tab = st.tabs(
+        ["Recruitment Configuration", "AI Provider & Model Policy"]
+    )
+    with recruitment_tab:
+        _show_recruitment_configuration(context)
+    with ai_tab:
+        show_ai_configuration(context)
+
+
+def _show_recruitment_configuration(context: SecurityContext) -> None:
     context.require_valid()
     service = TenantConfigurationService()
     can_manage = (

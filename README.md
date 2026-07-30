@@ -4,7 +4,7 @@ RecruitOS is ALTEN's configuration-driven AI Resume Screening and Recruitment Pl
 
 ## Current version
 
-`0.7.7` — Sprint `5.7.1D: Explicit Reader Sharing & Review Assignment`
+`0.7.8` — Sprint `5.7.2A: AI Provider Gateway & Model Registry`
 
 ## Current capabilities
 
@@ -24,6 +24,9 @@ RecruitOS is ALTEN's configuration-driven AI Resume Screening and Recruitment Pl
 - guided page-to-page workflow navigation and action-oriented home dashboard
 - explicit Reader/Reviewer project sharing with expiry, revocation and audit history
 - read-only Shared Records evidence workspace with reviewer-progress tracking
+- governed local/hosted AI provider abstraction with secret-safe deployment configuration
+- immutable model/prompt registry, user-workspace task policy and structured-output validation
+- content-free latency, token, estimated-cost and redacted-error telemetry
 - repository policy, clean source-release builder and CI quality gate
 
 ## Setup
@@ -33,6 +36,7 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 # Install the packages listed in packages.txt on Linux/Streamlit Cloud for OCR
+# Configure AI credentials only through environment variables or Streamlit secrets
 python -m tools.preflight
 python -m unittest discover -s tests -p "test_*.py" -v
 streamlit run app.py

@@ -5,11 +5,11 @@
 - **Product:** RecruitOS — AI Resume Screening & Recruitment Platform
 - **Organization:** ALTEN
 - **Owner:** Tamilvanan A
-- **Current version:** `0.7.7`
-- **Current milestone:** `5.7.1D — Explicit Reader Sharing & Review Assignment`
-- **Database schema:** `6`
+- **Current version:** `0.7.8`
+- **Current milestone:** `5.7.2A — AI Provider Gateway & Model Registry`
+- **Database schema:** `7`
 - **Technology:** Python, Streamlit, pandas, SQLite, openpyxl, PyMuPDF, python-docx, Pillow and Tesseract OCR
-- **Status:** Active development. Identity, RBAC, private data/files, tenant configuration and explicit read-only sharing are implemented.
+- **Status:** Active development. Identity, RBAC, private data/files, tenant configuration and explicit read-only sharing and the governed AI provider gateway are implemented.
 
 ## 2. Product objective
 
@@ -186,6 +186,20 @@ Rules:
 - Every screening session stores the configuration version, SHA-256 fingerprint and sheet summary used for that result.
 - Authentication/security settings are deployment configuration, not business master data.
 - Configuration snapshots are the future governance anchor for AI model, prompt, embedding and taxonomy versions.
+
+## 10.1 AI provider and model-policy contract
+
+RecruitOS AI is disabled by default and remains separate from deterministic screening until an approved task is integrated by a later sprint.
+
+- Provider credentials are read only from deployment environment variables or Streamlit secrets.
+- API keys are never written to SQLite, audit records, telemetry, source-controlled files or exports.
+- Supported provider adapters in this foundation are `OPENAI` through the Responses API and local `OLLAMA` through `/api/chat`.
+- No provider model name is assumed by source code; an authorized administrator registers the exact approved deployment identifier.
+- Every AI call requires an enabled user-workspace task policy, an active model, an active immutable prompt version and a structured JSON output schema.
+- Hosted transfer is blocked unless `allow_external_data` is explicitly enabled for the task policy.
+- Telemetry stores request metadata, latency, usage, estimated cost and redacted errors only; prompts, candidate text and output content are excluded.
+- The provider gateway validates returned JSON before any downstream service can consume it.
+- Sprint `5.7.2A` does not call AI from Resume Screening or deterministic scoring.
 
 ## 11. Testing and quality gate
 

@@ -33,6 +33,17 @@ class SettingsConfigurationTests(unittest.TestCase):
                 "secret",
             )
 
+    def test_ai_provider_settings_use_deployment_value_boundary(self) -> None:
+        from pathlib import Path
+
+        source = settings.__file__
+        text = Path(source).read_text(encoding="utf-8")
+        self.assertIn('RECRUITOS_OPENAI_API_KEY', text)
+        self.assertIn('RECRUITOS_OPENAI_BASE_URL', text)
+        self.assertIn('RECRUITOS_OLLAMA_BASE_URL', text)
+        self.assertIn('_deployment_value("RECRUITOS_OPENAI_API_KEY"', text)
+        self.assertNotIn('sk-proj-', text)
+
     def test_missing_value_uses_default(self) -> None:
         fake_streamlit = SimpleNamespace(secrets={})
         with (
